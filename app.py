@@ -116,7 +116,7 @@ with tab_rsvp:
         )
         notes = st.text_area("Additional comments or concerns:")
         
-        # Make sure the full function call is on this line:
+        # Complete form button setup
         submitted = st.form_submit_button("Submit Confirmation")
         
         if submitted:
@@ -144,27 +144,3 @@ with tab_dashboard:
     
     # Render Milestone Table
     df_dates = pd.DataFrame(DUE_DATES)
-    st.table(df_dates)
-    
-    # Interactive CSV reader to view live RSVPs
-    st.subheader("Live Registration Data (130 Guests Target)")
-    if os.path.isfile("registrations.csv"):
-        df_reg = pd.read_csv("registrations.csv")
-        st.dataframe(df_reg)
-        st.metric(label="Total Confirmed Attendees", value=len(df_reg))
-    else:
-        st.info("No confirmations submitted yet. Test out the Attendee Check-In tab to populate data here live!")
-
-
-# ---- FIXED BRANDING FOOTER ----
-# Using HTML component injection to lock the container layout directly to the viewport floor
-st.markdown('<div class="fixed-footer">', unsafe_allow_html=True)
-
-if os.path.exists("footer.png"):
-    # Render footer image inside the styled fixed banner component
-    st.image("footer.png", width=650)
-else:
-    st.markdown('<p class="footer-text">Central Specialty Pet supports a family of brands.</p>', unsafe_allow_html=True)
-
-st.markdown('<p class="footer-text">FY27 Corporate Kickoff | Innovation & Collaboration | Discovery World, Milwaukee</p>', unsafe_allow_html=True)
-st.markdown('</div>', unsafe_allow_html=True)
