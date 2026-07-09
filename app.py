@@ -52,7 +52,6 @@ st.markdown("""
 
 
 # ---- SITE HEADER (Main Logo) ----
-# Strictly expecting a clean, uncorrupted logo.png image file matrix
 if os.path.exists("logo.png"):
     st.image("logo.png", use_container_width=True)
 
@@ -148,4 +147,23 @@ with tab_dashboard:
     st.table(df_dates)
     
     # Interactive CSV reader to view live RSVPs
-    st.subheader("Live
+    st.subheader("Live Registration Data (130 Guests Target)")
+    if os.path.isfile("registrations.csv"):
+        df_reg = pd.read_csv("registrations.csv")
+        st.dataframe(df_reg)
+        st.metric(label="Total Confirmed Attendees", value=len(df_reg))
+    else:
+        st.info("No confirmations submitted yet. Test out the Attendee Check-In tab to populate data here live!")
+
+
+# ---- FIXED BRANDING FOOTER ----
+st.markdown('<div class="fixed-footer">', unsafe_allow_html=True)
+
+# Expecting the companion brand banner asset 
+if os.path.exists("footer.png"):
+    st.image("footer.png", width=650)
+else:
+    st.markdown('<p class="footer-text">Central Specialty Pet supports a family of brands.</p>', unsafe_allow_html=True)
+
+st.markdown('<p class="footer-text">FY27 Corporate Kickoff | Innovation & Collaboration | Discovery World, Milwaukee</p>', unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
