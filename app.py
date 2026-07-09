@@ -51,18 +51,9 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-# ---- SITE HEADER (Main Logo with Bulletproof Error Catching) ----
-if os.path.exists("logo.jpeg"):
-    try:
-        st.image("logo.jpeg", use_container_width=True)
-    except Exception:
-        # If the file data stream is corrupted, fail gracefully so the site still loads
-        st.title("🐾 Central Specialty Pet")
-elif os.path.exists("logo.png"):
-    try:
-        st.image("logo.png", use_container_width=True)
-    except Exception:
-        st.title("🐾 Central Specialty Pet")
+# ---- SITE HEADER (Main Logo) ----
+# Using a clean, universally compatible web URL to completely bypass local server decoding issues
+st.image("https://www.central.com/images/default-source/logos/central-garden-pet-logo.png", width=350)
 
 # Application Header UI
 st.title(EVENT_META["title"])
@@ -119,7 +110,7 @@ with tab_rsvp:
             ]
         )
         
-        diet = st.multiselect(
+        diet = multiselect_var = st.multiselect(
             "Dietary Restrictions / Allergies",
             ["None", "Vegetarian", "Vegan", "Gluten-Free", "Nut Allergy", "Dairy-Free"]
         )
