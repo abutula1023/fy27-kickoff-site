@@ -52,8 +52,9 @@ st.markdown("""
 
 
 # ---- SITE HEADER (Main Logo) ----
-if os.path.exists("logo.png"):
-    st.image("logo.png", use_container_width=True)
+# Pointed exactly to your clean logo.jpeg file layout
+if os.path.exists("logo.jpeg"):
+    st.image("logo.jpeg", use_container_width=True)
 
 # Application Header UI
 st.title(EVENT_META["title"])
@@ -159,7 +160,7 @@ with tab_dashboard:
 # ---- FIXED BRANDING FOOTER ----
 st.markdown('<div class="fixed-footer">', unsafe_allow_html=True)
 
-# Expecting the companion brand banner asset 
+# Expecting your true footer.png layout format at the bottom
 if os.path.exists("footer.png"):
     st.image("footer.png", width=650)
 else:
