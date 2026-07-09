@@ -110,7 +110,7 @@ with tab_rsvp:
             ]
         )
         
-        diet = multiselect_var = st.multiselect(
+        diet = st.multiselect(
             "Dietary Restrictions / Allergies",
             ["None", "Vegetarian", "Vegan", "Gluten-Free", "Nut Allergy", "Dairy-Free"]
         )
