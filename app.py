@@ -51,10 +51,18 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-# ---- SITE HEADER (Main Logo) ----
-# Pointed exactly to your clean logo.jpeg file layout
+# ---- SITE HEADER (Main Logo with Bulletproof Error Catching) ----
 if os.path.exists("logo.jpeg"):
-    st.image("logo.jpeg", use_container_width=True)
+    try:
+        st.image("logo.jpeg", use_container_width=True)
+    except Exception:
+        # If the file data stream is corrupted, fail gracefully so the site still loads
+        st.title("🐾 Central Specialty Pet")
+elif os.path.exists("logo.png"):
+    try:
+        st.image("logo.png", use_container_width=True)
+    except Exception:
+        st.title("🐾 Central Specialty Pet")
 
 # Application Header UI
 st.title(EVENT_META["title"])
@@ -160,9 +168,12 @@ with tab_dashboard:
 # ---- FIXED BRANDING FOOTER ----
 st.markdown('<div class="fixed-footer">', unsafe_allow_html=True)
 
-# Expecting your true footer.png layout format at the bottom
+# Wrapped in try/except to prevent footer data stream corruption from crashing layout
 if os.path.exists("footer.png"):
-    st.image("footer.png", width=650)
+    try:
+        st.image("footer.png", width=650)
+    except Exception:
+        st.markdown('<p class="footer-text">Central Specialty Pet supports a family of brands.</p>', unsafe_allow_html=True)
 else:
     st.markdown('<p class="footer-text">Central Specialty Pet supports a family of brands.</p>', unsafe_allow_html=True)
 
