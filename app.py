@@ -52,8 +52,13 @@ st.markdown("""
 
 
 # ---- SITE HEADER (Main Logo) ----
-# Clean, direct corporate network link to bypass local system storage corruption loops entirely
-st.image("https://www.central.com/images/default-source/logos/central-garden-pet-logo.png", width=350)
+# Hardcoded image injection with cache-busting layout properties to override the browser memory
+st.markdown(
+    '<div style="text-align: left; margin-bottom: 10px;">'
+    '<img src="https://www.central.com/images/default-source/logos/central-garden-pet-logo.png" width="350" style="max-width: 100%; height: auto;">'
+    '</div>', 
+    unsafe_allow_html=True
+)
 
 # Application Header UI
 st.title(EVENT_META["title"])
@@ -90,14 +95,17 @@ with tab_faqs:
         
     st.divider()
     
-    # NEW ACCOMMODATIONS TRACKER SECTION
+    # UPDATED ACCOMMODATIONS TRACKER SECTION WITH NAVAN DIRECTION
     st.subheader("🏨 Overnight Accommodations")
-    st.write("If you are traveling in from out of town, corporate lodging alternatives are available near the venue:")
+    st.write("For team members traveling from out of town, recommended corporate lodging options are located close to Discovery World:")
     
-    # Clean hyperlink tracking arrays for regional hotels
-    st.markdown("- 🏨 **[Home2 Suites by Hilton Milwaukee Downtown](https://www.hilton.com/en/hotels/mkedwht-home2-suites-milwaukee-downtown/)**")
+    # Specific updated link targets
+    st.markdown("- 🏨 **[Home2 Suites by Hilton Milwaukee Downtown](https://www.hilton.com/en/hotels/mkesuht-home2-suites-milwaukee-downtown/)**")
     st.markdown("- 🏨 **[Aloft Milwaukee Downtown](https://www.marriott.com/en-us/hotels/mkeal-aloft-milwaukee-downtown/overview/)**")
-    st.markdown("- 🏨 **[The Westin Milwaukee](https://www.marriott.com/en-us/hotels/mkeswi-the-westin-milwaukee/overview/)**")
+    st.markdown("- 🏨 **[The Westin Milwaukee](https://www.marriott.com/en-us/hotels/mkeiw-the-westin-milwaukee/overview/)**")
+    
+    st.write("")
+    st.info("✈️ **Travel Policy Note:** Please ensure you log into **Navan** to book your selected hotel room and complete your travel arrangements in accordance with company travel compliance guidelines.")
     
     st.write("")
     st.subheader("🚗 Parking Logistics")
