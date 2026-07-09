@@ -1,0 +1,17 @@
+# .streamlit/config.toml
+
+[theme]
+# Central Corporate Deep Green for headers and primary elements
+primaryColor = "#006E43"
+
+# Background color for the main content area (clean white)
+backgroundColor = "#FFFFFF"
+
+# Background color for sidebar and card components (light professional gray)
+secondaryBackgroundColor = "#F4F6F4"
+
+# Clean dark slate for maximum readability on mobile screens
+textColor = "#1E293B"
+
+# Font family pairing
+font = "sans serif"
