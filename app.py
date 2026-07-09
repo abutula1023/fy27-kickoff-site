@@ -52,6 +52,7 @@ st.markdown("""
 
 
 # ---- SITE HEADER (Main Logo) ----
+# Strictly expecting a clean, uncorrupted logo.png image file matrix
 if os.path.exists("logo.png"):
     st.image("logo.png", use_container_width=True)
 
@@ -144,3 +145,7 @@ with tab_dashboard:
     
     # Render Milestone Table
     df_dates = pd.DataFrame(DUE_DATES)
+    st.table(df_dates)
+    
+    # Interactive CSV reader to view live RSVPs
+    st.subheader("Live
