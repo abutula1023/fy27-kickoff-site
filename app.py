@@ -53,7 +53,8 @@ st.markdown("""
 
 # ---- SITE HEADER (Main Logo) ----
 # Pointing directly to the raw file path inside your public GitHub repository to bypass hotlink blocks
-st.image("https://raw.githubusercontent.com/abutula1023/fy27-kickoff-site/main/logo.png", width=350)
+# Set to use full container width to perfectly match the layout blocks below
+st.image("https://raw.githubusercontent.com/abutula1023/fy27-kickoff-site/main/logo.png", use_container_width=True)
 
 # Application Header UI
 st.title(EVENT_META["title"])
@@ -166,28 +167,3 @@ with tab_dashboard:
     # Render Milestone Table
     df_dates = pd.DataFrame(DUE_DATES)
     st.table(df_dates)
-    
-    # Interactive CSV reader to view live RSVPs
-    st.subheader("Live Registration Data (130 Guests Target)")
-    if os.path.isfile("registrations.csv"):
-        df_reg = pd.read_csv("registrations.csv")
-        st.dataframe(df_reg)
-        st.metric(label="Total Confirmed Attendees", value=len(df_reg))
-    else:
-        st.info("No confirmations submitted yet. Test out the Attendee Check-In tab to populate data here live!")
-
-
-# ---- FIXED BRANDING FOOTER ----
-st.markdown('<div class="fixed-footer">', unsafe_allow_html=True)
-
-# Wrapped in try/except to prevent footer data stream corruption from crashing layout
-if os.path.exists("footer.png"):
-    try:
-        st.image("footer.png", width=650)
-    except Exception:
-        st.markdown('<p class="footer-text">Central Specialty Pet supports a family of brands.</p>', unsafe_allow_html=True)
-else:
-    st.markdown('<p class="footer-text">Central Specialty Pet supports a family of brands.</p>', unsafe_allow_html=True)
-
-st.markdown('<p class="footer-text">FY27 Corporate Kickoff | Innovation & Collaboration | Discovery World, Milwaukee</p>', unsafe_allow_html=True)
-st.markdown('</div>', unsafe_allow_html=True)
