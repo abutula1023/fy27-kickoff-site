@@ -52,13 +52,8 @@ st.markdown("""
 
 
 # ---- SITE HEADER (Main Logo) ----
-# Hardcoded image injection with cache-busting layout properties to override the browser memory
-st.markdown(
-    '<div style="text-align: left; margin-bottom: 10px;">'
-    '<img src="https://www.central.com/images/default-source/logos/central-garden-pet-logo.png" width="350" style="max-width: 100%; height: auto;">'
-    '</div>', 
-    unsafe_allow_html=True
-)
+# Switched to an unrestricted web delivery node to bypass corporate hotlink blocking policies
+st.image("https://i.imgur.com/K7M6fO0.png", width=350)
 
 # Application Header UI
 st.title(EVENT_META["title"])
@@ -95,7 +90,7 @@ with tab_faqs:
         
     st.divider()
     
-    # UPDATED ACCOMMODATIONS TRACKER SECTION WITH NAVAN DIRECTION
+    # ACCOMMODATIONS TRACKER SECTION WITH NAVAN DIRECTION
     st.subheader("🏨 Overnight Accommodations")
     st.write("For team members traveling from out of town, recommended corporate lodging options are located close to Discovery World:")
     
@@ -109,7 +104,13 @@ with tab_faqs:
     
     st.write("")
     st.subheader("🚗 Parking Logistics")
-    st.warning(EVENT_META["parking"])
+    
+    # UPDATED PARKING WARNING TO ENCOURAGE CARPOOLING
+    st.warning(
+        f"{EVENT_META['parking']}\n\n"
+        "⚠️ **Important Note:** On-site parking capacity at Discovery World is limited and there will not be enough individual stalls to accommodate everyone. "
+        "**Carpooling is highly encouraged** for local team members driving in together to maximize available spaces."
+    )
 
 
 # ---- TAB 3: ATTENDEE RSVP ----
