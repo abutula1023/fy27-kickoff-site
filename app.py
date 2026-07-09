@@ -52,7 +52,7 @@ st.markdown("""
 
 
 # ---- SITE HEADER (Main Logo) ----
-# Using a clean, universally compatible web URL to completely bypass local server decoding issues
+# Clean, direct corporate network link to bypass local system storage corruption loops entirely
 st.image("https://www.central.com/images/default-source/logos/central-garden-pet-logo.png", width=350)
 
 # Application Header UI
@@ -88,6 +88,18 @@ with tab_faqs:
         st.write(faq['answer'])
         st.write("")
         
+    st.divider()
+    
+    # NEW ACCOMMODATIONS TRACKER SECTION
+    st.subheader("🏨 Overnight Accommodations")
+    st.write("If you are traveling in from out of town, corporate lodging alternatives are available near the venue:")
+    
+    # Clean hyperlink tracking arrays for regional hotels
+    st.markdown("- 🏨 **[Home2 Suites by Hilton Milwaukee Downtown](https://www.hilton.com/en/hotels/mkedwht-home2-suites-milwaukee-downtown/)**")
+    st.markdown("- 🏨 **[Aloft Milwaukee Downtown](https://www.marriott.com/en-us/hotels/mkeal-aloft-milwaukee-downtown/overview/)**")
+    st.markdown("- 🏨 **[The Westin Milwaukee](https://www.marriott.com/en-us/hotels/mkeswi-the-westin-milwaukee/overview/)**")
+    
+    st.write("")
     st.subheader("🚗 Parking Logistics")
     st.warning(EVENT_META["parking"])
 
