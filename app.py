@@ -52,8 +52,8 @@ st.markdown("""
 
 
 # ---- SITE HEADER (Main Logo) ----
-# Switched to an unrestricted web delivery node to bypass corporate hotlink blocking policies
-st.image("https://i.imgur.com/K7M6fO0.png", width=350)
+# Pointing directly to the raw file path inside your public GitHub repository to bypass hotlink blocks
+st.image("https://raw.githubusercontent.com/abutula1023/fy27-kickoff-site/main/logo.png", width=350)
 
 # Application Header UI
 st.title(EVENT_META["title"])
@@ -105,7 +105,7 @@ with tab_faqs:
     st.write("")
     st.subheader("🚗 Parking Logistics")
     
-    # UPDATED PARKING WARNING TO ENCOURAGE CARPOOLING
+    # PARKING WARNING INCLUDING CARPOOLING DIRECTIVES
     st.warning(
         f"{EVENT_META['parking']}\n\n"
         "⚠️ **Important Note:** On-site parking capacity at Discovery World is limited and there will not be enough individual stalls to accommodate everyone. "
