@@ -9,7 +9,6 @@ from datetime import datetime
 from data import EVENT_META, AGENDA, FAQS, DUE_DATES
 
 # ---- GOOGLE SHEETS CONNECTION ----
-# 🚨 REPLACE WITH YOUR ACTUAL GOOGLE SHEET URL 🚨
 SHEET_URL = "https://docs.google.com/spreadsheets/d/1ZLDMKpkS36tRaXvLYdhgIdQ48_CvuS0xrbkrWiuTnYw/edit?gid=0#gid=0"
 
 # ---- CORE CONFIGURATION ----
@@ -19,15 +18,11 @@ st.set_page_config(
     layout="centered"
 )
 
-# Connect to Google securely using a cached resource to prevent token timeouts
-@st.cache_resource
-def init_google_client():
-    creds_dict = json.loads(st.secrets["google_credentials"])
-    scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
-    creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
-    return gspread.authorize(creds)
-
-gc = init_google_client()
+# Connect to Google securely (FRESH connection every run, no caching to prevent dead network tunnels)
+creds_dict = json.loads(st.secrets["google_credentials"])
+scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
+creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
+gc = gspread.authorize(creds)
 
 # ---- CSS / STYLING INJECTION ----
 st.markdown("""
@@ -38,6 +33,7 @@ st.markdown("""
             color: white !important;
             border-radius: 6px !important;
             border: none !important;
+            height: 45px !important;
         }
 
         /* Footer Container Styling */
@@ -111,7 +107,6 @@ with tab_faqs:
     st.subheader("🏨 Overnight Accommodations")
     st.write("For team members traveling from out of town, recommended corporate lodging options are located close to Discovery World:")
     
-    # Specific updated link targets
     st.markdown("- 🏨 **[Home2 Suites by Hilton Milwaukee Downtown](https://www.hilton.com/en/hotels/mkesuht-home2-suites-milwaukee-downtown/)**")
     st.markdown("- 🏨 **[Aloft Milwaukee Downtown](https://www.marriott.com/en-us/hotels/mkeal-aloft-milwaukee-downtown/overview/)**")
     st.markdown("- 🏨 **[The Westin Milwaukee](https://www.marriott.com/en-us/hotels/mkeiw-the-westin-milwaukee/overview/)**")
@@ -122,7 +117,6 @@ with tab_faqs:
     st.write("")
     st.subheader("🚗 Parking Logistics")
     
-    # PARKING WARNING INCLUDING CARPOOLING DIRECTIVES
     st.warning(
         f"{EVENT_META['parking']}\n\n"
         "⚠️ **Important Note:** On-site parking capacity at Discovery World is limited and there will not be enough individual stalls to accommodate everyone. "
@@ -135,53 +129,52 @@ with tab_rsvp:
     st.header("Confirm Your Attendance Details")
     st.write("Please verify your details below for final seating and catering submittals.")
     
-    with st.form("rsvp_form", clear_on_submit=True):
-        name = st.text_input("Full Name *")
-        
-        # UPDATED DEPARTMENT LIST
-        dept = st.selectbox(
-            "Department", 
-            [
-                "HR", "Finance", "Marketing", "Sales", "Operations", 
-                "IT", "R&D", "Customer Service", "Procurement", 
-                "S&OP", "Manufacturing", "Other"
-            ]
-        )
-        
-        diet = st.multiselect(
-            "Dietary Restrictions / Allergies",
-            ["None", "Vegetarian", "Vegan", "Gluten-Free", "Nut Allergy", "Dairy-Free"]
-        )
-        notes = st.text_area("Additional comments or concerns:")
-        
-        # Complete form button setup
-        submitted = st.form_submit_button("Submit Confirmation")
-        
-        if submitted:
-            if not name:
-                st.error("Name is a required field.")
-            else:
-                # Format responses safely
-                diet_str = ", ".join(diet) if diet else "None"
-                notes_str = notes if notes else "None"
-                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    # Session state message handler to survive the script rerun
+    if "rsvp_success" in st.session_state:
+        st.success(st.session_state["rsvp_success"])
+        del st.session_state["rsvp_success"]
+    
+    # Standard Inputs (Bypassing the buggy st.form)
+    name = st.text_input("Full Name *")
+    
+    dept = st.selectbox(
+        "Department", 
+        [
+            "HR", "Finance", "Marketing", "Sales", "Operations", 
+            "IT", "R&D", "Customer Service", "Procurement", 
+            "S&OP", "Manufacturing", "Other"
+        ]
+    )
+    
+    diet = st.multiselect(
+        "Dietary Restrictions / Allergies",
+        ["None", "Vegetarian", "Vegan", "Gluten-Free", "Nut Allergy", "Dairy-Free"]
+    )
+    notes = st.text_area("Additional comments or concerns:")
+    
+    submit_rsvp = st.button("Submit Confirmation", type="primary", use_container_width=True)
+    
+    if submit_rsvp:
+        if not name:
+            st.error("Name is a required field.")
+        else:
+            diet_str = ", ".join(diet) if diet else "None"
+            notes_str = notes if notes else "None"
+            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            
+            try:
+                sheet = gc.open_by_url(SHEET_URL).sheet1
+                existing_names = sheet.col_values(2)
                 
-                # Write directly to Google Sheets with Duplicate Protection
-                try:
-                    sheet = gc.open_by_url(SHEET_URL).sheet1
+                if name.strip().lower() in [n.strip().lower() for n in existing_names]:
+                    st.warning(f"Hold on! It looks like we already have a registration on file for {name}.")
+                else:
+                    sheet.append_row([timestamp, name, dept, diet_str, notes_str])
+                    st.session_state["rsvp_success"] = f"Thank you, {name}! Your check-in details have been logged."
+                    st.rerun()
                     
-                    # Fetch all existing names in Column 2 (Attendee Name)
-                    existing_names = sheet.col_values(2)
-                    
-                    # Check if the person is already registered
-                    if name.strip() in [n.strip() for n in existing_names]:
-                        st.warning(f"Hold on! It looks like we already have a registration on file for {name}.")
-                    else:
-                        sheet.append_row([timestamp, name, dept, diet_str, notes_str])
-                        st.success(f"Thank you, {name}! Your check-in details have been logged.")
-                        
-                except Exception as e:
-                    st.error(f"An error occurred while communicating with Google Sheets: {e}")
+            except Exception as e:
+                st.error(f"An error occurred while communicating with Google Sheets: {e}")
 
 
 # ---- TAB 4: PLANNING DASHBOARD (ADMIN) ----
@@ -189,11 +182,9 @@ with tab_dashboard:
     st.header("Internal Planning & Milestones")
     st.write("Track operations workflow and target timeline goals below.")
     
-    # Render Milestone Table
     df_dates = pd.DataFrame(DUE_DATES)
     st.table(df_dates)
     
-    # Interactive Google Sheets reader to view live RSVPs
     st.subheader("Live Registration Data (130 Guests Target)")
     
     try:
@@ -214,7 +205,6 @@ with tab_dashboard:
 # ---- FIXED BRANDING FOOTER ----
 st.markdown('<div class="fixed-footer">', unsafe_allow_html=True)
 
-# Wrapped in try/except to prevent footer data stream corruption from crashing layout
 if os.path.exists("footer.png"):
     try:
         st.image("footer.png", width=650)
