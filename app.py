@@ -162,11 +162,20 @@ with tab_rsvp:
                 notes_str = notes if notes else "None"
                 timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 
-                # Write directly to Google Sheets
+                # Write directly to Google Sheets with Duplicate Protection
                 try:
                     sheet = gc.open_by_url(SHEET_URL).sheet1
-                    sheet.append_row([timestamp, name, dept, diet_str, notes_str])
-                    st.success(f"Thank you, {name}! Your check-in details have been logged.")
+                    
+                    # Fetch all existing names in Column 2 (Attendee Name)
+                    existing_names = sheet.col_values(2)
+                    
+                    # Check if the person is already registered
+                    if name.strip() in [n.strip() for n in existing_names]:
+                        st.warning(f"Hold on! It looks like we already have a registration on file for {name}.")
+                    else:
+                        sheet.append_row([timestamp, name, dept, diet_str, notes_str])
+                        st.success(f"Thank you, {name}! Your check-in details have been logged.")
+                        
                 except Exception as e:
                     st.error(f"An error occurred while communicating with Google Sheets: {e}")
 
