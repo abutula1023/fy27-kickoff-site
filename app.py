@@ -18,15 +18,21 @@ st.set_page_config(
     layout="centered"
 )
 
-# Connect to Google securely with error handling
-try:
+# Connect to Google securely using a TTL (Time-To-Live) cache
+# This refreshes the connection every 30 minutes (1800 seconds), 
+# preventing both the 60-minute Google token expiration AND server memory leaks!
+@st.cache_resource(ttl=1800)
+def get_google_client():
     creds_dict = json.loads(st.secrets["google_credentials"])
     scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
     creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
-    gc = gspread.authorize(creds)
+    return gspread.authorize(creds)
+
+try:
+    gc = get_google_client()
 except Exception as e:
     st.error(f"Configuration Error: Could not connect to Google Sheets. Check your Secrets settings. ({e})")
-    st.stop() # Stops the app from crashing with the generic "Oh no" page
+    st.stop()
 
 # ---- CSS / STYLING INJECTION ----
 st.markdown("""
