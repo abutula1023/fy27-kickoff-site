@@ -18,28 +18,15 @@ st.set_page_config(
     layout="centered"
 )
 
-# 1. Connect to Google securely (Token Cache)
-@st.cache_resource(ttl=1800)
-def get_google_client():
+# Connect to Google (Clean, native connection. No caching to avoid memory leaks)
+try:
     creds_dict = json.loads(st.secrets["google_credentials"])
     scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
     creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
-    return gspread.authorize(creds)
-
-try:
-    gc = get_google_client()
+    gc = gspread.authorize(creds)
 except Exception as e:
     st.error(f"Configuration Error: Could not connect to Google Sheets. Check your Secrets settings. ({e})")
     st.stop()
-
-# 2. The API Shield: Fetches data safely. 
-# The underscore in `_client` explicitly tells Streamlit NOT to hash the live network socket.
-@st.cache_data(ttl=15, show_spinner=False)
-def get_live_data(_client):
-    sheet = _client.open_by_url(SHEET_URL).sheet1
-    names = sheet.col_values(2)
-    records = sheet.get_all_records()
-    return names, records
 
 # ---- CSS / STYLING INJECTION ----
 st.markdown("""
@@ -111,35 +98,31 @@ with tab_faqs:
 # ---- TAB 3: RSVP ----
 with tab_rsvp:
     st.header("Confirm Your Attendance Details")
-    if "rsvp_success" in st.session_state:
-        st.success(st.session_state["rsvp_success"])
-        del st.session_state["rsvp_success"]
     
-    name = st.text_input("Full Name *")
-    dept = st.selectbox("Department", ["HR", "Finance", "Marketing", "Sales", "Operations", "IT", "R&D", "Customer Service", "Procurement", "S&OP", "Manufacturing", "Other"])
-    diet = st.multiselect("Dietary Restrictions", ["None", "Vegetarian", "Vegan", "Gluten-Free", "Nut Allergy", "Dairy-Free"])
-    notes = st.text_area("Additional comments:")
-    
-    if st.button("Submit Confirmation", type="primary", use_container_width=True):
-        if not name:
-            st.error("Name is a required field.")
-        else:
-            try:
-                # Pass the safe _client variable into the function
-                existing_names, _ = get_live_data(gc)
-                
-                if name.strip().lower() in [n.strip().lower() for n in existing_names]:
-                    st.warning(f"Registration already exists for {name}.")
-                else:
+    # st.form completely stops background network calls while the user types
+    with st.form("rsvp_form", clear_on_submit=True):
+        name = st.text_input("Full Name *")
+        dept = st.selectbox("Department", ["HR", "Finance", "Marketing", "Sales", "Operations", "IT", "R&D", "Customer Service", "Procurement", "S&OP", "Manufacturing", "Other"])
+        diet = st.multiselect("Dietary Restrictions", ["None", "Vegetarian", "Vegan", "Gluten-Free", "Nut Allergy", "Dairy-Free"])
+        notes = st.text_area("Additional comments:")
+        
+        submitted = st.form_submit_button("Submit Confirmation", type="primary", use_container_width=True)
+        
+        if submitted:
+            if not name:
+                st.error("Name is a required field.")
+            else:
+                try:
                     sheet = gc.open_by_url(SHEET_URL).sheet1
-                    sheet.append_row([datetime.now().strftime("%Y-%m-%d %H:%M:%S"), name, dept, ", ".join(diet) if diet else "None", notes if notes else "None"])
+                    existing_names = sheet.col_values(2)
                     
-                    st.cache_data.clear() 
-                    st.session_state["rsvp_success"] = f"Thank you, {name}!"
-                    st.rerun()
-                    
-            except Exception as e:
-                st.error(f"Error submitting data: {e}")
+                    if name.strip().lower() in [n.strip().lower() for n in existing_names]:
+                        st.warning(f"Registration already exists for {name}.")
+                    else:
+                        sheet.append_row([datetime.now().strftime("%Y-%m-%d %H:%M:%S"), name, dept, ", ".join(diet) if diet else "None", notes if notes else "None"])
+                        st.success(f"Thank you, {name}! Your check-in details have been logged.")
+                except Exception as e:
+                    st.error(f"Error submitting data: {e}")
 
 # ---- TAB 4: ADMIN ----
 with tab_dashboard:
@@ -147,8 +130,8 @@ with tab_dashboard:
     st.table(pd.DataFrame(DUE_DATES))
     st.subheader("Live Registration Data")
     try:
-        # Pass the safe _client variable into the function
-        _, records = get_live_data(gc) 
+        sheet = gc.open_by_url(SHEET_URL).sheet1
+        records = sheet.get_all_records()
         if records:
             df = pd.DataFrame(records)
             st.dataframe(df, use_container_width=True)
