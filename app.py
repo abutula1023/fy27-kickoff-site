@@ -10,7 +10,7 @@ from data import EVENT_META, AGENDA, FAQS, DUE_DATES
 
 # ---- GOOGLE SHEETS CONNECTION ----
 # 🚨 REPLACE WITH YOUR ACTUAL GOOGLE SHEET URL 🚨
-SHEET_URL = "YOUR_SPREADSHEET_URL_HERE"
+SHEET_URL = "https://docs.google.com/spreadsheets/d/1ZLDMKpkS36tRaXvLYdhgIdQ48_CvuS0xrbkrWiuTnYw/edit?gid=0#gid=0"
 
 # ---- CORE CONFIGURATION ----
 st.set_page_config(
