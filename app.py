@@ -2,7 +2,15 @@
 import streamlit as st
 import pandas as pd
 import os
+import json
+import gspread
+from google.oauth2.service_account import Credentials
+from datetime import datetime
 from data import EVENT_META, AGENDA, FAQS, DUE_DATES
+
+# ---- GOOGLE SHEETS CONNECTION ----
+# 🚨 REPLACE WITH YOUR ACTUAL GOOGLE SHEET URL 🚨
+SHEET_URL = "YOUR_SPREADSHEET_URL_HERE"
 
 # ---- CORE CONFIGURATION ----
 st.set_page_config(
@@ -10,6 +18,12 @@ st.set_page_config(
     page_icon="🚀",
     layout="centered"
 )
+
+# Connect to Google securely via Streamlit Secrets
+creds_dict = json.loads(st.secrets["google_credentials"])
+scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
+creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
+gc = gspread.authorize(creds)
 
 # ---- CSS / STYLING INJECTION ----
 st.markdown("""
@@ -52,7 +66,6 @@ st.markdown("""
 
 
 # ---- SITE HEADER (Main Logo) ----
-# Switched to use_column_width=True for backward compatibility with the cloud server's environment
 st.image("https://raw.githubusercontent.com/abutula1023/fy27-kickoff-site/main/logo.png", use_column_width=True)
 
 # Application Header UI
@@ -144,18 +157,18 @@ with tab_rsvp:
             if not name:
                 st.error("Name is a required field.")
             else:
-                # Save input data directly to local operational file system
-                csv_file = "registrations.csv"
-                new_data = pd.DataFrame([{
-                    "Name": name, "Department": dept, "Dietary": ", ".join(diet), "Notes": notes
-                }])
+                # Format responses safely
+                diet_str = ", ".join(diet) if diet else "None"
+                notes_str = notes if notes else "None"
+                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 
-                if not os.path.isfile(csv_file):
-                    new_data.to_csv(csv_file, index=False)
-                else:
-                    new_data.to_csv(csv_file, mode='a', header=False, index=False)
-                    
-                st.success(f"Thank you, {name}! Your check-in details have been logged.")
+                # Write directly to Google Sheets
+                try:
+                    sheet = gc.open_by_url(SHEET_URL).sheet1
+                    sheet.append_row([timestamp, name, dept, diet_str, notes_str])
+                    st.success(f"Thank you, {name}! Your check-in details have been logged.")
+                except Exception as e:
+                    st.error(f"An error occurred while communicating with Google Sheets: {e}")
 
 
 # ---- TAB 4: PLANNING DASHBOARD (ADMIN) ----
@@ -167,14 +180,22 @@ with tab_dashboard:
     df_dates = pd.DataFrame(DUE_DATES)
     st.table(df_dates)
     
-    # Interactive CSV reader to view live RSVPs
+    # Interactive Google Sheets reader to view live RSVPs
     st.subheader("Live Registration Data (130 Guests Target)")
-    if os.path.isfile("registrations.csv"):
-        df_reg = pd.read_csv("registrations.csv")
-        st.dataframe(df_reg)
-        st.metric(label="Total Confirmed Attendees", value=len(df_reg))
-    else:
-        st.info("No confirmations submitted yet. Test out the Attendee Check-In tab to populate data here live!")
+    
+    try:
+        sheet = gc.open_by_url(SHEET_URL).sheet1
+        records = sheet.get_all_records()
+        
+        if records:
+            df_reg = pd.DataFrame(records)
+            st.dataframe(df_reg, use_container_width=True)
+            st.metric(label="Total Confirmed Attendees", value=len(df_reg))
+        else:
+            st.info("No confirmations submitted yet. Test out the Attendee Check-In tab to populate data here live!")
+            
+    except Exception as e:
+        st.error(f"Could not load data from Google Sheets. Error: {e}")
 
 
 # ---- FIXED BRANDING FOOTER ----
