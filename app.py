@@ -18,9 +18,7 @@ st.set_page_config(
     layout="centered"
 )
 
-# Connect to Google securely using a TTL (Time-To-Live) cache
-# This refreshes the connection every 30 minutes (1800 seconds), 
-# preventing both the 60-minute Google token expiration AND server memory leaks!
+# 1. Connect to Google securely (Token Cache)
 @st.cache_resource(ttl=1800)
 def get_google_client():
     creds_dict = json.loads(st.secrets["google_credentials"])
@@ -33,6 +31,14 @@ try:
 except Exception as e:
     st.error(f"Configuration Error: Could not connect to Google Sheets. Check your Secrets settings. ({e})")
     st.stop()
+
+# 2. The API Shield: Fetches data and caches it for 15 seconds to prevent rate-limit crashes
+@st.cache_data(ttl=15)
+def get_live_data():
+    sheet = gc.open_by_url(SHEET_URL).sheet1
+    names = sheet.col_values(2)
+    records = sheet.get_all_records()
+    return names, records
 
 # ---- CSS / STYLING INJECTION ----
 st.markdown("""
@@ -118,13 +124,21 @@ with tab_rsvp:
             st.error("Name is a required field.")
         else:
             try:
-                sheet = gc.open_by_url(SHEET_URL).sheet1
-                if name.strip().lower() in [n.strip().lower() for n in sheet.col_values(2)]:
+                # Fetch the cached list of names
+                existing_names, _ = get_live_data()
+                
+                if name.strip().lower() in [n.strip().lower() for n in existing_names]:
                     st.warning(f"Registration already exists for {name}.")
                 else:
+                    # Write the new row directly to Google
+                    sheet = gc.open_by_url(SHEET_URL).sheet1
                     sheet.append_row([datetime.now().strftime("%Y-%m-%d %H:%M:%S"), name, dept, ", ".join(diet) if diet else "None", notes if notes else "None"])
+                    
+                    # Instantly wipe the cache so the Admin Tracker updates immediately
+                    st.cache_data.clear() 
                     st.session_state["rsvp_success"] = f"Thank you, {name}!"
                     st.rerun()
+                    
             except Exception as e:
                 st.error(f"Error submitting data: {e}")
 
@@ -134,9 +148,14 @@ with tab_dashboard:
     st.table(pd.DataFrame(DUE_DATES))
     st.subheader("Live Registration Data")
     try:
-        df = pd.DataFrame(gc.open_by_url(SHEET_URL).sheet1.get_all_records())
-        st.dataframe(df, use_container_width=True)
-        st.metric("Total Attendees", len(df))
+        # Pulls the cached data instead of spamming Google Sheets
+        _, records = get_live_data() 
+        if records:
+            df = pd.DataFrame(records)
+            st.dataframe(df, use_container_width=True)
+            st.metric("Total Attendees", len(df))
+        else:
+            st.info("No confirmations submitted yet.")
     except Exception as e:
         st.error(f"Could not load data: {e}")
 
