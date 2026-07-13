@@ -32,10 +32,11 @@ except Exception as e:
     st.error(f"Configuration Error: Could not connect to Google Sheets. Check your Secrets settings. ({e})")
     st.stop()
 
-# 2. The API Shield: Fetches data and caches it for 15 seconds to prevent rate-limit crashes
-@st.cache_data(ttl=15)
-def get_live_data():
-    sheet = gc.open_by_url(SHEET_URL).sheet1
+# 2. The API Shield: Fetches data safely. 
+# The underscore in `_client` explicitly tells Streamlit NOT to hash the live network socket.
+@st.cache_data(ttl=15, show_spinner=False)
+def get_live_data(_client):
+    sheet = _client.open_by_url(SHEET_URL).sheet1
     names = sheet.col_values(2)
     records = sheet.get_all_records()
     return names, records
@@ -124,17 +125,15 @@ with tab_rsvp:
             st.error("Name is a required field.")
         else:
             try:
-                # Fetch the cached list of names
-                existing_names, _ = get_live_data()
+                # Pass the safe _client variable into the function
+                existing_names, _ = get_live_data(gc)
                 
                 if name.strip().lower() in [n.strip().lower() for n in existing_names]:
                     st.warning(f"Registration already exists for {name}.")
                 else:
-                    # Write the new row directly to Google
                     sheet = gc.open_by_url(SHEET_URL).sheet1
                     sheet.append_row([datetime.now().strftime("%Y-%m-%d %H:%M:%S"), name, dept, ", ".join(diet) if diet else "None", notes if notes else "None"])
                     
-                    # Instantly wipe the cache so the Admin Tracker updates immediately
                     st.cache_data.clear() 
                     st.session_state["rsvp_success"] = f"Thank you, {name}!"
                     st.rerun()
@@ -148,8 +147,8 @@ with tab_dashboard:
     st.table(pd.DataFrame(DUE_DATES))
     st.subheader("Live Registration Data")
     try:
-        # Pulls the cached data instead of spamming Google Sheets
-        _, records = get_live_data() 
+        # Pass the safe _client variable into the function
+        _, records = get_live_data(gc) 
         if records:
             df = pd.DataFrame(records)
             st.dataframe(df, use_container_width=True)
