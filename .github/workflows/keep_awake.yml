@@ -2,14 +2,12 @@ name: Keep Streamlit App Awake
 
 on:
   schedule:
-    # This cron schedule runs the ping every 6 hours
     - cron: "0 */6 * * *"
-  workflow_dispatch: # This allows you to manually run the script from the Actions tab if you ever want to test it
+  workflow_dispatch: {}
 
 jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
       - name: Ping App URL
-        # The curl command sends a silent web request to your site just like a browser visit
-        run: curl -s -o /dev/null -w "Status Code: %{http_code}\n" https://csp-fy27-kickoff.streamlit.app/
+        run: curl -s -o /dev/null -w "Status Code: %{http_code}\n" https://YOUR_APP_URL.streamlit.app
