@@ -6,11 +6,12 @@ on:
       - main
   schedule:
     - cron: "0 */6 * * *"
-  workflow_dispatch:
+  workflow_dispatch: {}
 
 jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
       - name: Ping App URL
-        run: curl -s -o /dev/null -w "Status Code: %{http_code}\n" https://csp-fy27-kickoff.streamlit.app/
+        run: |
+          curl -s -o /dev/null -w "Status Code: %{http_code}\n" https://csp-fy27-kickoff.streamlit.app/
