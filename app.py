@@ -18,15 +18,14 @@ st.set_page_config(
     layout="centered"
 )
 
-# Connect to Google (Clean, native connection. No caching to avoid memory leaks)
-try:
+# HELPER FUNCTION: Only connects to Google on-demand to prevent idle memory crashes
+def get_sheet():
     creds_dict = json.loads(st.secrets["google_credentials"])
     scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
     creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
     gc = gspread.authorize(creds)
-except Exception as e:
-    st.error(f"Configuration Error: Could not connect to Google Sheets. Check your Secrets settings. ({e})")
-    st.stop()
+    return gc.open_by_url(SHEET_URL).sheet1
+
 
 # ---- CSS / STYLING INJECTION ----
 st.markdown("""
@@ -99,7 +98,6 @@ with tab_faqs:
 with tab_rsvp:
     st.header("Confirm Your Attendance Details")
     
-    # st.form completely stops background network calls while the user types
     with st.form("rsvp_form", clear_on_submit=True):
         name = st.text_input("Full Name *")
         dept = st.selectbox("Department", ["HR", "Finance", "Marketing", "Sales", "Operations", "IT", "R&D", "Customer Service", "Procurement", "S&OP", "Manufacturing", "Other"])
@@ -108,12 +106,13 @@ with tab_rsvp:
         
         submitted = st.form_submit_button("Submit Confirmation", type="primary", use_container_width=True)
         
+        # Only connects to Google IF the button is clicked
         if submitted:
             if not name:
                 st.error("Name is a required field.")
             else:
                 try:
-                    sheet = gc.open_by_url(SHEET_URL).sheet1
+                    sheet = get_sheet()
                     existing_names = sheet.col_values(2)
                     
                     if name.strip().lower() in [n.strip().lower() for n in existing_names]:
@@ -129,17 +128,29 @@ with tab_dashboard:
     st.header("Internal Planning")
     st.table(pd.DataFrame(DUE_DATES))
     st.subheader("Live Registration Data")
-    try:
-        sheet = gc.open_by_url(SHEET_URL).sheet1
-        records = sheet.get_all_records()
-        if records:
-            df = pd.DataFrame(records)
-            st.dataframe(df, use_container_width=True)
-            st.metric("Total Attendees", len(df))
-        else:
-            st.info("No confirmations submitted yet.")
-    except Exception as e:
-        st.error(f"Could not load data: {e}")
+    
+    # Places the data fetch safely behind a button to prevent idle background spam
+    if st.button("Load / Refresh Live RSVP Data", type="primary"):
+        try:
+            sheet = get_sheet()
+            records = sheet.get_all_records()
+            if records:
+                df = pd.DataFrame(records)
+                st.dataframe(df, use_container_width=True)
+                st.metric("Total Attendees", len(df))
+            else:
+                st.info("No confirmations submitted yet.")
+        except Exception as e:
+            st.error(f"Could not load data: {e}")
 
 # ---- FOOTER ----
-st.markdown('<div class="fixed-footer"><p class="footer-text">FY27 Corporate Kickoff | Innovation & Collaboration | Discovery World, Milwaukee</p></div>', unsafe_allow_html=True)
+st.markdown('<div class="fixed-footer">', unsafe_allow_html=True)
+if os.path.exists("footer.png"):
+    try:
+        st.image("footer.png", width=650)
+    except Exception:
+        st.markdown('<p class="footer-text">Central Specialty Pet supports a family of brands.</p>', unsafe_allow_html=True)
+else:
+    st.markdown('<p class="footer-text">Central Specialty Pet supports a family of brands.</p>', unsafe_allow_html=True)
+st.markdown('<p class="footer-text">FY27 Corporate Kickoff | Innovation & Collaboration | Discovery World, Milwaukee</p>', unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
