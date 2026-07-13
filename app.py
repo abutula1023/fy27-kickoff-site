@@ -19,11 +19,15 @@ st.set_page_config(
     layout="centered"
 )
 
-# Connect to Google securely via Streamlit Secrets
-creds_dict = json.loads(st.secrets["google_credentials"])
-scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
-creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
-gc = gspread.authorize(creds)
+# Connect to Google securely using a cached resource to prevent token timeouts
+@st.cache_resource
+def init_google_client():
+    creds_dict = json.loads(st.secrets["google_credentials"])
+    scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
+    creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
+    return gspread.authorize(creds)
+
+gc = init_google_client()
 
 # ---- CSS / STYLING INJECTION ----
 st.markdown("""
