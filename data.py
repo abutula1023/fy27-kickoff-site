@@ -15,7 +15,7 @@ EVENT_META = {
 
 AGENDA = [
     {
-        "time": "07:30 AM – 08:00 AM",
+        "time": "07:30 AM – 08:30 AM",
         "title": "Breakfast & Networking",
         "desc": (
             "Breakfast buffet with breakfast sandwiches, potatoes, assorted granola bars, "
@@ -23,27 +23,27 @@ AGENDA = [
         ),
     },
     {
-        "time": "08:00 AM – 08:20 AM",
-        "title": "Welcome & FY27 Theme",
+        "time": "08:30 AM – 09:00 AM",
+        "title": "Welcome & FY27 Theme — Todd",
         "desc": (
-            "Opening remarks introducing our core pillars: Collaboration, Innovation, "
-            "and Growth."
+            "Opening remarks introducing the FY27 theme and our core pillars: "
+            "Collaboration, Innovation, and Growth."
         ),
     },
     {
-        "time": "08:30 AM – 10:00 AM",
-        "title": "Executive Panel",
+        "time": "09:00 AM – 10:00 AM",
+        "title": "Speakers — Manny, Anna, and TBD",
         "desc": (
-            "SVP- and VP-led panel featuring Anna Bell, SVP Pet Consumer Marketing, "
-            "and additional leaders."
+            "Presentations and discussion focused on innovation, growth, "
+            "collaboration, and FY27 priorities."
         ),
     },
     {
         "time": "10:00 AM – 12:00 PM",
-        "title": "Team Competition: Watson Adventures",
+        "title": "Team Competition",
         "desc": (
-            "Celebrate Milwaukee scavenger hunt around Discovery World. "
-            "The rain plan is an indoor Trivia Slam."
+            "Team competition activity. Additional details and final timing "
+            "will be communicated before the event."
         ),
     },
     {
@@ -55,25 +55,35 @@ AGENDA = [
         ),
     },
     {
-        "time": "01:30 PM – 02:30 PM",
+        "time": "01:00 PM – 01:30 PM",
         "title": "Networking, Wander & Swag Giveaway",
         "desc": (
-            "Explore the pavilion, pick up custom swag, and join the Team Winner "
-            "Award Ceremony."
+            "Explore the pavilion, network with colleagues, and pick up custom event swag."
+        ),
+    },
+    {
+        "time": "01:30 PM – 02:30 PM",
+        "title": "Executive Panel",
+        "desc": (
+            "A panel discussion with company leaders covering FY27 priorities, "
+            "opportunities, and key business topics."
         ),
     },
     {
         "time": "02:30 PM – 03:00 PM",
-        "title": "Wrap-Up Talk",
+        "title": "Wrap Up Talk & Team Winner Award Ceremony",
         "desc": (
-            "Final strategy takeaways. Guests must leave the Pavilion by 3:00 PM "
-            "because of an evening event."
+            "Final takeaways, recognition of the team competition winner, "
+            "and closing remarks. Guests must leave the Pavilion by 3:00 PM."
         ),
     },
     {
         "time": "03:00 PM – 05:00 PM",
         "title": "After-Event Gathering (Optional)",
-        "desc": "An informal, optional post-event social hour for networking and decompression.",
+        "desc": (
+            "An informal, optional post-event gathering for networking, "
+            "conversation, and decompression."
+        ),
     },
 ]
 
