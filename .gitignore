@@ -1,0 +1,22 @@
+# Local secrets and environment files
+.streamlit/secrets.toml
+.env
+.env.*
+
+# Python environments and caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local Streamlit and workflow output
+streamlit-status.png
+streamlit-failure.png
+
+# Editor and operating-system files
+.vscode/
+.DS_Store
+Thumbs.db
