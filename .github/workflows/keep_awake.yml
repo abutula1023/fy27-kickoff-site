@@ -64,11 +64,12 @@ jobs:
 
                   page.wait_for_timeout(45000)
                   body_text = page.locator("body").inner_text()
+                  normalized_body_text = " ".join(body_text.split())
 
-                  if "this app has gone to sleep" in body_text.casefold():
+                  if "this app has gone to sleep" in normalized_body_text.casefold():
                       raise RuntimeError("The Streamlit app remained asleep.")
 
-                  if EXPECTED_TEXT.casefold() not in body_text.casefold():
+                  if EXPECTED_TEXT.casefold() not in normalized_body_text.casefold():
                       raise RuntimeError(
                           "The expected FY27 Kickoff page content did not render."
                       )
