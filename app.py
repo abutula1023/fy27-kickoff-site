@@ -1,156 +1,387 @@
 # app.py
-import streamlit as st
-import pandas as pd
-import os
+from __future__ import annotations
+
+import hmac
 import json
-import gspread
-from google.oauth2.service_account import Credentials
+import logging
+import os
+import re
 from datetime import datetime
-from data import EVENT_META, AGENDA, FAQS, DUE_DATES
+from pathlib import Path
+from zoneinfo import ZoneInfo
 
-# ---- GOOGLE SHEETS CONNECTION ----
-SHEET_URL = "https://docs.google.com/spreadsheets/d/1ZLDMKpkS36tRaXvLYdhgIdQ48_CvuS0xrbkrWiuTnYw/edit?gid=0#gid=0"
+import gspread
+import pandas as pd
+import streamlit as st
+from google.oauth2.service_account import Credentials
 
-# ---- CORE CONFIGURATION ----
+from data import AGENDA, EVENT_META, FAQS
+
+logger = logging.getLogger(__name__)
+
+CENTRAL_TIME = ZoneInfo("America/Chicago")
+GOOGLE_SHEETS_SCOPE = "https://www.googleapis.com/auth/spreadsheets"
+RSVP_HEADERS = [
+    "Submitted At",
+    "Full Name",
+    "Department",
+    "Dietary Restrictions",
+    "Additional Comments",
+    "Work Email",
+]
+FORM_STATE_KEYS = [
+    "rsvp_name",
+    "rsvp_email",
+    "rsvp_department",
+    "rsvp_dietary",
+    "rsvp_notes",
+]
+EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+
+
+class AppConfigurationError(RuntimeError):
+    """Raised when a required deployment setting is missing or malformed."""
+
+
 st.set_page_config(
     page_title="FY27 Corporate Kickoff",
     page_icon="🚀",
-    layout="centered"
+    layout="centered",
 )
 
-# HELPER FUNCTION: Only connects to Google on-demand to prevent idle memory crashes
-def get_sheet():
-    creds_dict = json.loads(st.secrets["google_credentials"])
-    scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
-    creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
-    gc = gspread.authorize(creds)
-    return gc.open_by_url(SHEET_URL).sheet1
+
+def get_setting(name: str) -> object:
+    """Read a setting from Streamlit secrets, falling back to an environment variable."""
+    try:
+        value = st.secrets[name]
+    except Exception:
+        value = os.getenv(name.upper())
+
+    if value is None or value == "":
+        raise AppConfigurationError(f"Missing required setting: {name}")
+
+    return value
 
 
-# ---- CSS / STYLING INJECTION ----
-st.markdown("""
+def get_sheet() -> gspread.Worksheet:
+    """Connect to the RSVP worksheet only when a user requests a read or write."""
+    raw_credentials = get_setting("google_credentials")
+    sheet_id = str(get_setting("google_sheet_id"))
+
+    try:
+        credentials_info = (
+            json.loads(raw_credentials)
+            if isinstance(raw_credentials, str)
+            else dict(raw_credentials)
+        )
+    except (TypeError, ValueError, json.JSONDecodeError) as exc:
+        raise AppConfigurationError("google_credentials is not valid JSON") from exc
+
+    credentials = Credentials.from_service_account_info(
+        credentials_info,
+        scopes=[GOOGLE_SHEETS_SCOPE],
+    )
+    client = gspread.authorize(credentials)
+    return client.open_by_key(sheet_id).sheet1
+
+
+def ensure_rsvp_headers(sheet: gspread.Worksheet) -> list[str]:
+    """Ensure the RSVP worksheet has the expected headers without moving existing data."""
+    headers = [header.strip() for header in sheet.row_values(1)]
+
+    if not headers:
+        sheet.append_row(RSVP_HEADERS)
+        return RSVP_HEADERS.copy()
+
+    updated_headers = headers.copy()
+    for required_header in RSVP_HEADERS:
+        if required_header not in updated_headers:
+            updated_headers.append(required_header)
+
+    if updated_headers != headers:
+        sheet.update(values=[updated_headers], range_name="A1")
+
+    return updated_headers
+
+
+def is_valid_email(email: str) -> bool:
+    return bool(EMAIL_PATTERN.fullmatch(email))
+
+
+def clear_rsvp_form_if_requested() -> None:
+    if st.session_state.pop("_clear_rsvp_form", False):
+        for key in FORM_STATE_KEYS:
+            st.session_state.pop(key, None)
+
+
+def render_admin_login() -> bool:
+    """Require a secret-backed password before showing RSVP records."""
+    if st.session_state.get("admin_authenticated", False):
+        return True
+
+    try:
+        expected_password = str(get_setting("admin_password"))
+    except AppConfigurationError:
+        st.info("Admin access has not been configured for this deployment.")
+        return False
+
+    password = st.text_input(
+        "Admin password",
+        type="password",
+        key="admin_password_entry",
+        help="The password is stored in Streamlit Secrets and is not included in the repository.",
+    )
+
+    if st.button("Unlock Admin Tracker", type="primary"):
+        if hmac.compare_digest(password, expected_password):
+            st.session_state["admin_authenticated"] = True
+            st.session_state.pop("admin_password_entry", None)
+            st.rerun()
+        else:
+            st.error("The password was not recognized.")
+
+    return False
+
+
+st.markdown(
+    """
     <style>
         div.stButton > button:first-child {
             background-color: #006E43 !important;
             color: white !important;
             border-radius: 6px !important;
             border: none !important;
-            height: 45px !important;
-        }
-        .fixed-footer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background-color: white;
-            border-top: 1px solid #006E43;
-            padding-top: 5px;
-            padding-bottom: 5px;
-            z-index: 100;
-            text-align: center;
+            min-height: 45px !important;
         }
         .footer-text {
             color: #64748b;
             font-size: 12px;
-            margin-top: 2px;
-            margin-bottom: 2px;
-        }
-        [data-testid="stMain"] {
-            padding-bottom: 180px;
+            line-height: 1.5;
+            margin: 2px 0;
+            text-align: center;
         }
     </style>
-""", unsafe_allow_html=True)
+    """,
+    unsafe_allow_html=True,
+)
 
-# ---- SITE HEADER ----
-st.image("https://raw.githubusercontent.com/abutula1023/fy27-kickoff-site/main/logo.png", use_column_width=True)
+if Path("logo.png").exists():
+    st.image("logo.png", use_container_width=True)
+
 st.title(EVENT_META["title"])
 st.subheader(f"🗓️ {EVENT_META['date']}")
 st.caption(f"📍 {EVENT_META['venue']} | ⏰ {EVENT_META['hours']}")
 st.divider()
 
-# ---- NAVIGATION TABS ----
-tab_agenda, tab_faqs, tab_rsvp, tab_dashboard = st.tabs([
-    "📋 Agenda", "❓ FAQs & Info", "📝 Attendee Check-In", "🔒 Admin Tracker"
-])
+tab_agenda, tab_faqs, tab_rsvp, tab_dashboard = st.tabs(
+    ["📋 Agenda", "❓ FAQs & Info", "📝 Attendee Check-In", "🔒 Admin Tracker"]
+)
 
-# ---- TAB 1: AGENDA ----
 with tab_agenda:
     st.header("Event Schedule")
-    st.info(f"**👔 Dress Code:** {EVENT_META['dress_code']} | **🍽️ Catering by:** {EVENT_META['catering']}")
+    st.info(
+        f"**👔 Dress Code:** {EVENT_META['dress_code']} | "
+        f"**🍽️ Catering by:** {EVENT_META['catering']}"
+    )
     for item in AGENDA:
         with st.expander(f"**{item['time']}** — {item['title']}"):
-            st.write(item['desc'])
+            st.write(item["desc"])
 
-# ---- TAB 2: FAQS ----
 with tab_faqs:
     st.header("Frequently Asked Questions")
     for faq in FAQS:
         st.markdown(f"**Q: {faq['question']}**")
-        st.write(faq['answer'])
+        st.write(faq["answer"])
+
     st.divider()
     st.subheader("🏨 Overnight Accommodations")
-    st.markdown("- 🏨 **[Home2 Suites by Hilton Milwaukee Downtown](https://www.hilton.com/en/hotels/mkesuht-home2-suites-milwaukee-downtown/)**")
-    st.markdown("- 🏨 **[Aloft Milwaukee Downtown](https://www.marriott.com/en-us/hotels/mkeal-aloft-milwaukee-downtown/overview/)**")
-    st.markdown("- 🏨 **[The Westin Milwaukee](https://www.marriott.com/en-us/hotels/mkeiw-the-westin-milwaukee/overview/)**")
-    st.warning("⚠️ **Parking:** On-site garage limited to 100 spaces. Carpooling highly encouraged!")
+    st.markdown(
+        "- 🏨 **[Home2 Suites by Hilton Milwaukee Downtown]"
+        "(https://www.hilton.com/en/hotels/mkesuht-home2-suites-milwaukee-downtown/)**"
+    )
+    st.markdown(
+        "- 🏨 **[Aloft Milwaukee Downtown]"
+        "(https://www.marriott.com/en-us/hotels/mkeal-aloft-milwaukee-downtown/overview/)**"
+    )
+    st.markdown(
+        "- 🏨 **[The Westin Milwaukee]"
+        "(https://www.marriott.com/en-us/hotels/mkeiw-the-westin-milwaukee/overview/)**"
+    )
+    st.warning(
+        "⚠️ **Parking:** On-site garage space is limited. Carpooling is highly encouraged!"
+    )
 
-# ---- TAB 3: RSVP ----
 with tab_rsvp:
+    clear_rsvp_form_if_requested()
+
+    success_message = st.session_state.pop("_rsvp_success_message", None)
+    if success_message:
+        st.success(success_message)
+
     st.header("Confirm Your Attendance Details")
-    
-    with st.form("rsvp_form", clear_on_submit=True):
-        name = st.text_input("Full Name *")
-        dept = st.selectbox("Department", ["HR", "Finance", "Marketing", "Sales", "Operations", "IT", "R&D", "Customer Service", "Procurement", "S&OP", "Manufacturing", "Other"])
-        diet = st.multiselect("Dietary Restrictions", ["None", "Vegetarian", "Vegan", "Gluten-Free", "Nut Allergy", "Dairy-Free"])
-        notes = st.text_area("Additional comments:")
-        
-        submitted = st.form_submit_button("Submit Confirmation", type="primary", use_container_width=True)
-        
-        # Only connects to Google IF the button is clicked
+    st.caption("Fields marked with * are required.")
+
+    with st.form("rsvp_form", clear_on_submit=False):
+        name = st.text_input(
+            "Full Name *",
+            key="rsvp_name",
+            max_chars=100,
+        )
+        email = st.text_input(
+            "Work Email *",
+            key="rsvp_email",
+            max_chars=150,
+        )
+        department = st.selectbox(
+            "Department",
+            [
+                "HR",
+                "Finance",
+                "Marketing",
+                "Sales",
+                "Operations",
+                "IT",
+                "R&D",
+                "Customer Service",
+                "Procurement",
+                "S&OP",
+                "Manufacturing",
+                "Other",
+            ],
+            key="rsvp_department",
+        )
+        dietary = st.multiselect(
+            "Dietary Restrictions",
+            [
+                "Vegetarian",
+                "Vegan",
+                "Gluten-Free",
+                "Nut Allergy",
+                "Dairy-Free",
+                "Other Allergy or Restriction",
+            ],
+            key="rsvp_dietary",
+            help="Leave blank when there are no dietary restrictions.",
+        )
+        notes = st.text_area(
+            "Additional comments",
+            key="rsvp_notes",
+            max_chars=500,
+        )
+
+        submitted = st.form_submit_button(
+            "Submit Confirmation",
+            type="primary",
+            use_container_width=True,
+        )
+
         if submitted:
-            if not name:
-                st.error("Name is a required field.")
+            clean_name = name.strip()
+            clean_email = email.strip().casefold()
+            clean_notes = notes.strip()
+
+            if not clean_name:
+                st.error("Please enter your full name.")
+            elif not is_valid_email(clean_email):
+                st.error("Please enter a valid work email address.")
             else:
                 try:
                     sheet = get_sheet()
-                    existing_names = sheet.col_values(2)
-                    
-                    if name.strip().lower() in [n.strip().lower() for n in existing_names]:
-                        st.warning(f"Registration already exists for {name}.")
+                    headers = ensure_rsvp_headers(sheet)
+                    email_column = headers.index("Work Email") + 1
+                    existing_emails = {
+                        value.strip().casefold()
+                        for value in sheet.col_values(email_column)[1:]
+                        if value.strip()
+                    }
+
+                    if clean_email in existing_emails:
+                        st.warning(
+                            "A registration already exists for this work email address."
+                        )
                     else:
-                        sheet.append_row([datetime.now().strftime("%Y-%m-%d %H:%M:%S"), name, dept, ", ".join(diet) if diet else "None", notes if notes else "None"])
-                        st.success(f"Thank you, {name}! Your check-in details have been logged.")
-                except Exception as e:
-                    st.error(f"Error submitting data: {e}")
+                        row_by_header = {
+                            "Submitted At": datetime.now(CENTRAL_TIME).strftime(
+                                "%Y-%m-%d %I:%M:%S %p %Z"
+                            ),
+                            "Full Name": clean_name,
+                            "Department": department,
+                            "Dietary Restrictions": ", ".join(dietary)
+                            if dietary
+                            else "None",
+                            "Additional Comments": clean_notes or "None",
+                            "Work Email": clean_email,
+                        }
+                        sheet.append_row(
+                            [row_by_header.get(header, "") for header in headers],
+                            value_input_option="USER_ENTERED",
+                        )
+                        st.session_state["_rsvp_success_message"] = (
+                            f"Thank you, {clean_name}! Your attendance details were saved."
+                        )
+                        st.session_state["_clear_rsvp_form"] = True
+                        st.rerun()
+                except AppConfigurationError:
+                    logger.exception("RSVP configuration error")
+                    st.error(
+                        "The RSVP connection is not configured correctly. "
+                        "Please contact the event planning team."
+                    )
+                except Exception:
+                    logger.exception("RSVP submission failed")
+                    st.error(
+                        "We could not save your confirmation. "
+                        "Please try again or contact the event planning team."
+                    )
 
-# ---- TAB 4: ADMIN ----
 with tab_dashboard:
-    st.header("Internal Planning")
-    st.table(pd.DataFrame(DUE_DATES))
-    st.subheader("Live Registration Data")
-    
-    # Places the data fetch safely behind a button to prevent idle background spam
-    if st.button("Load / Refresh Live RSVP Data", type="primary"):
-        try:
-            sheet = get_sheet()
-            records = sheet.get_all_records()
-            if records:
-                df = pd.DataFrame(records)
-                st.dataframe(df, use_container_width=True)
-                st.metric("Total Attendees", len(df))
-            else:
-                st.info("No confirmations submitted yet.")
-        except Exception as e:
-            st.error(f"Could not load data: {e}")
+    st.header("Admin Tracker")
+    st.caption("Authorized event planners only.")
 
-# ---- FOOTER ----
-st.markdown('<div class="fixed-footer">', unsafe_allow_html=True)
-if os.path.exists("footer.png"):
-    try:
-        st.image("footer.png", width=650)
-    except Exception:
-        st.markdown('<p class="footer-text">Central Specialty Pet supports a family of brands.</p>', unsafe_allow_html=True)
-else:
-    st.markdown('<p class="footer-text">Central Specialty Pet supports a family of brands.</p>', unsafe_allow_html=True)
-st.markdown('<p class="footer-text">FY27 Corporate Kickoff | Innovation & Collaboration | Discovery World, Milwaukee</p>', unsafe_allow_html=True)
-st.markdown('</div>', unsafe_allow_html=True)
+    if render_admin_login():
+        logout_column, _ = st.columns([1, 3])
+        with logout_column:
+            if st.button("Sign Out"):
+                st.session_state["admin_authenticated"] = False
+                st.rerun()
+
+        st.subheader("Live Registration Data")
+        if st.button("Load / Refresh Live RSVP Data", type="primary"):
+            try:
+                sheet = get_sheet()
+                records = sheet.get_all_records()
+                if records:
+                    dataframe = pd.DataFrame(records)
+                    st.metric("Total Attendees", len(dataframe))
+                    st.dataframe(
+                        dataframe,
+                        use_container_width=True,
+                        hide_index=True,
+                    )
+                else:
+                    st.info("No confirmations have been submitted yet.")
+            except AppConfigurationError:
+                logger.exception("Admin tracker configuration error")
+                st.error(
+                    "The RSVP connection is not configured correctly. "
+                    "Please review the deployment secrets."
+                )
+            except Exception:
+                logger.exception("Admin tracker load failed")
+                st.error(
+                    "The registration data could not be loaded. Please try again."
+                )
+
+st.divider()
+if Path("footer.png").exists():
+    st.image("footer.png", use_container_width=True)
+
+st.markdown(
+    '<p class="footer-text">Central Specialty Pet supports a family of brands.</p>',
+    unsafe_allow_html=True,
+)
+st.markdown(
+    '<p class="footer-text">FY27 Corporate Kickoff | Innovation & Collaboration | '
+    'Discovery World, Milwaukee</p>',
+    unsafe_allow_html=True,
+)

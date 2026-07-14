@@ -1,15 +1,14 @@
 name: Keep Streamlit App Awake
 
 on:
-  push:
-    branches:
-      - main
-
   schedule:
     # Every 4 hours at minute 17, using UTC
     - cron: "17 */4 * * *"
-
   workflow_dispatch:
+
+concurrency:
+  group: keep-streamlit-awake
+  cancel-in-progress: true
 
 jobs:
   keep-awake:
@@ -18,81 +17,77 @@ jobs:
 
     steps:
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
       - name: Install Playwright and Chromium
         run: |
           python -m pip install --upgrade pip
-          pip install playwright
+          python -m pip install "playwright==1.54.0"
           python -m playwright install --with-deps chromium
 
-      - name: Open and wake Streamlit app
+      - name: Open and validate Streamlit app
         run: |
           python - <<'PY'
           import re
           from playwright.sync_api import sync_playwright
 
           APP_URL = "https://csp-fy27-kickoff.streamlit.app/"
+          EXPECTED_TEXT = "FY27 Kickoff: Innovation & Collaboration"
+          SCREENSHOT_PATH = "streamlit-failure.png"
 
           with sync_playwright() as p:
               browser = p.chromium.launch(headless=True)
+              page = browser.new_page(viewport={"width": 1440, "height": 1000})
 
-              page = browser.new_page(
-                  viewport={"width": 1440, "height": 1000}
-              )
-
-              print(f"Opening {APP_URL}")
-
-              response = page.goto(
-                  APP_URL,
-                  wait_until="domcontentloaded",
-                  timeout=120000
-              )
-
-              if response:
-                  print(f"Initial HTTP status: {response.status}")
-              else:
-                  print("No initial HTTP response was returned.")
-
-              page.wait_for_timeout(10000)
-
-              wake_button = page.get_by_text(
-                  re.compile(r"get this app back up", re.IGNORECASE)
-              )
-
-              if wake_button.count() > 0:
-                  print("Sleeping Streamlit app detected.")
-                  print("Clicking the wake-up button...")
-                  wake_button.first.click()
-              else:
-                  print("No sleeping-app button was found.")
-
-              page.wait_for_timeout(45000)
-
-              page.screenshot(
-                  path="streamlit-status.png",
-                  full_page=True
-              )
-
-              body_text = page.locator("body").inner_text().lower()
-
-              if "this app has gone to sleep" in body_text:
-                  raise RuntimeError(
-                      "The Streamlit app was still asleep after the wake attempt."
+              try:
+                  print(f"Opening {APP_URL}")
+                  response = page.goto(
+                      APP_URL,
+                      wait_until="domcontentloaded",
+                      timeout=120000,
                   )
 
-              print(f"Final page title: {page.title()}")
-              print(f"Final URL: {page.url}")
-              print("Streamlit visit completed successfully.")
+                  if response:
+                      print(f"Initial HTTP status: {response.status}")
 
-              browser.close()
+                  page.wait_for_timeout(10000)
+
+                  wake_button = page.get_by_text(
+                      re.compile(r"get this app back up", re.IGNORECASE)
+                  )
+
+                  if wake_button.count() > 0:
+                      print("Sleeping Streamlit app detected. Clicking the wake-up button.")
+                      wake_button.first.click()
+
+                  page.wait_for_timeout(45000)
+                  body_text = page.locator("body").inner_text()
+
+                  if "this app has gone to sleep" in body_text.casefold():
+                      raise RuntimeError("The Streamlit app remained asleep.")
+
+                  if EXPECTED_TEXT.casefold() not in body_text.casefold():
+                      raise RuntimeError(
+                          "The expected FY27 Kickoff page content did not render."
+                      )
+
+                  print(f"Final page title: {page.title()}")
+                  print(f"Final URL: {page.url}")
+                  print("Streamlit app rendered successfully.")
+              except Exception:
+                  page.screenshot(path=SCREENSHOT_PATH, full_page=True)
+                  raise
+              finally:
+                  browser.close()
           PY
 
-      - name: Upload status screenshot
-        if: always()
-        uses: actions/upload-artifact@v4
+      - name: Upload failure screenshot
+        if: failure()
+        uses: actions/upload-artifact@v5
         with:
-          name: streamlit-status
-          path: streamlit-status.png
+          name: streamlit-failure
+          path: streamlit-failure.png
+          if-no-files-found: ignore
+          retention-days: 3
