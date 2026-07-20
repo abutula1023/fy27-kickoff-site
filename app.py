@@ -21,6 +21,8 @@ logger = logging.getLogger(__name__)
 
 CENTRAL_TIME = ZoneInfo("America/Chicago")
 GOOGLE_SHEETS_SCOPE = "https://www.googleapis.com/auth/spreadsheets"
+EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+
 RSVP_HEADERS = [
     "Submitted At",
     "Full Name",
@@ -28,15 +30,17 @@ RSVP_HEADERS = [
     "Dietary Restrictions",
     "Additional Comments",
     "Work Email",
+    "Kickoff Question",
 ]
+
 FORM_STATE_KEYS = [
     "rsvp_name",
     "rsvp_email",
     "rsvp_department",
     "rsvp_dietary",
     "rsvp_notes",
+    "rsvp_question",
 ]
-EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 
 class AppConfigurationError(RuntimeError):
@@ -51,7 +55,6 @@ st.set_page_config(
 
 
 def get_setting(name: str) -> object:
-    """Read a setting from Streamlit secrets, falling back to an environment variable."""
     try:
         value = st.secrets[name]
     except Exception:
@@ -59,12 +62,10 @@ def get_setting(name: str) -> object:
 
     if value is None or value == "":
         raise AppConfigurationError(f"Missing required setting: {name}")
-
     return value
 
 
 def get_sheet() -> gspread.Worksheet:
-    """Connect to the RSVP worksheet only when a user requests a read or write."""
     raw_credentials = get_setting("google_credentials")
     sheet_id = str(get_setting("google_sheet_id"))
 
@@ -81,12 +82,10 @@ def get_sheet() -> gspread.Worksheet:
         credentials_info,
         scopes=[GOOGLE_SHEETS_SCOPE],
     )
-    client = gspread.authorize(credentials)
-    return client.open_by_key(sheet_id).sheet1
+    return gspread.authorize(credentials).open_by_key(sheet_id).sheet1
 
 
 def ensure_rsvp_headers(sheet: gspread.Worksheet) -> list[str]:
-    """Ensure the RSVP worksheet has the expected headers without moving existing data."""
     headers = [header.strip() for header in sheet.row_values(1)]
 
     if not headers:
@@ -115,7 +114,6 @@ def clear_rsvp_form_if_requested() -> None:
 
 
 def render_admin_login() -> bool:
-    """Require a secret-backed password before showing RSVP records."""
     if st.session_state.get("admin_authenticated", False):
         return True
 
@@ -129,7 +127,6 @@ def render_admin_login() -> bool:
         "Admin password",
         type="password",
         key="admin_password_entry",
-        help="The password is stored in Streamlit Secrets and is not included in the repository.",
     )
 
     if st.button("Unlock Admin Tracker", type="primary"):
@@ -222,16 +219,8 @@ with tab_rsvp:
     st.caption("Fields marked with * are required.")
 
     with st.form("rsvp_form", clear_on_submit=False):
-        name = st.text_input(
-            "Full Name *",
-            key="rsvp_name",
-            max_chars=100,
-        )
-        email = st.text_input(
-            "Work Email *",
-            key="rsvp_email",
-            max_chars=150,
-        )
+        name = st.text_input("Full Name *", key="rsvp_name", max_chars=100)
+        email = st.text_input("Work Email *", key="rsvp_email", max_chars=150)
         department = st.selectbox(
             "Department",
             [
@@ -268,6 +257,12 @@ with tab_rsvp:
             key="rsvp_notes",
             max_chars=500,
         )
+        question = st.text_area(
+            "Please list one question you would like to ask about Growth, Collaboration or Innovation (or anything else).",
+            key="rsvp_question",
+            max_chars=500,
+            help="Optional. Your question will be shared with the event planning team.",
+        )
 
         submitted = st.form_submit_button(
             "Submit Confirmation",
@@ -279,6 +274,7 @@ with tab_rsvp:
             clean_name = name.strip()
             clean_email = email.strip().casefold()
             clean_notes = notes.strip()
+            clean_question = question.strip()
 
             if not clean_name:
                 st.error("Please enter your full name.")
@@ -311,6 +307,7 @@ with tab_rsvp:
                             else "None",
                             "Additional Comments": clean_notes or "None",
                             "Work Email": clean_email,
+                            "Kickoff Question": clean_question or "None",
                         }
                         sheet.append_row(
                             [row_by_header.get(header, "") for header in headers],
@@ -348,8 +345,7 @@ with tab_dashboard:
         st.subheader("Live Registration Data")
         if st.button("Load / Refresh Live RSVP Data", type="primary"):
             try:
-                sheet = get_sheet()
-                records = sheet.get_all_records()
+                records = get_sheet().get_all_records()
                 if records:
                     dataframe = pd.DataFrame(records)
                     st.metric("Total Attendees", len(dataframe))
@@ -368,9 +364,7 @@ with tab_dashboard:
                 )
             except Exception:
                 logger.exception("Admin tracker load failed")
-                st.error(
-                    "The registration data could not be loaded. Please try again."
-                )
+                st.error("The registration data could not be loaded. Please try again.")
 
 st.divider()
 if Path("footer.png").exists():
