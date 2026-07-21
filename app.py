@@ -1,6 +1,7 @@
 # app.py
 from __future__ import annotations
 
+import base64
 import hmac
 import json
 import logging
@@ -367,8 +368,17 @@ with tab_dashboard:
                 st.error("The registration data could not be loaded. Please try again.")
 
 st.divider()
-if Path("footer.png").exists():
-    st.image("footer.png", use_container_width=True)
+footer_path = Path("footer.png")
+if footer_path.exists():
+    footer_data = footer_path.read_bytes()
+    if not footer_data.startswith(b"\x89PNG\r\n\x1a\n"):
+        try:
+            footer_data = base64.b64decode(footer_data, validate=True)
+        except (ValueError, base64.binascii.Error):
+            logger.exception("Footer image data could not be decoded")
+            footer_data = b""
+    if footer_data:
+        st.image(footer_data, use_container_width=True)
 
 st.markdown(
     '<p class="footer-text">Central Specialty Pet supports a family of brands.</p>',
