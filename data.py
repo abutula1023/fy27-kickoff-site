@@ -1,9 +1,9 @@
 # data.py
 
 EVENT_META = {
-    "title": "FY27 Kickoff: Innovation & Collaboration",
+    "title": "CSP 2027 Fiscal Year Kick-Off",
     "date": "September 18, 2026",
-    "venue": "Discovery World (Exclusive Pavilion Use)",
+    "venue": "Discovery World, 500 North Harbor Drive, Milwaukee, WI 53202",
     "hours": "7:30 AM – 3:00 PM",
     "dress_code": "Business Casual",
     "parking": (
@@ -32,7 +32,7 @@ AGENDA = [
     },
     {
         "time": "09:00 AM – 10:00 AM",
-        "title": "Speakers — Manny, Anna, and TBD",
+        "title": "Speakers — Valerie, Anna, and Alex",
         "desc": (
             "Presentations and discussion focused on innovation, growth, "
             "collaboration, and FY27 priorities."
@@ -41,10 +41,7 @@ AGENDA = [
     {
         "time": "10:00 AM – 12:00 PM",
         "title": "Team Competition",
-        "desc": (
-            "Team competition activity. Additional details and final timing "
-            "will be communicated before the event."
-        ),
+        "desc": "Event hosted by Watson Adventures.",
     },
     {
         "time": "12:00 PM – 01:00 PM",
