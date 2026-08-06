@@ -255,16 +255,16 @@ with tab_rsvp:
             key="rsvp_dietary",
             help="Select None if you have no dietary restrictions. Do not select None with another option.",
         )
-        notes = st.text_area(
-            "Additional comments",
-            key="rsvp_notes",
-            max_chars=500,
-        )
         question = st.text_area(
             "Please list one question you would like to ask about Growth, Collaboration or Innovation (or anything else).",
             key="rsvp_question",
             max_chars=500,
             help="Optional. Your question will be shared with the event planning team.",
+        )
+        notes = st.text_area(
+            "Additional Comments / Event Questions",
+            key="rsvp_notes",
+            max_chars=500,
         )
 
         submitted = st.form_submit_button(
