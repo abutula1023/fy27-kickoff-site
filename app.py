@@ -49,7 +49,7 @@ class AppConfigurationError(RuntimeError):
 
 
 st.set_page_config(
-    page_title="FY27 Corporate Kickoff",
+    page_title="CSP 2027 Fiscal Year Kick-Off",
     page_icon="🚀",
     layout="centered",
 )
@@ -193,6 +193,7 @@ with tab_faqs:
 
     st.divider()
     st.subheader("🏨 Overnight Accommodations")
+    st.write("Check Navan Travel to explore all options. Below are a few options:")
     st.markdown(
         "- 🏨 **[Home2 Suites by Hilton Milwaukee Downtown]"
         "(https://www.hilton.com/en/hotels/mkesuht-home2-suites-milwaukee-downtown/)**"
@@ -385,7 +386,6 @@ st.markdown(
     unsafe_allow_html=True,
 )
 st.markdown(
-    '<p class="footer-text">FY27 Corporate Kickoff | Innovation & Collaboration | '
-    'Discovery World, Milwaukee</p>',
+    '<p class="footer-text">CSP 2027 Fiscal Year Kick-Off | Discovery World, Milwaukee</p>',
     unsafe_allow_html=True,
 )
