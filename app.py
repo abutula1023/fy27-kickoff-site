@@ -244,6 +244,7 @@ with tab_rsvp:
         dietary = st.multiselect(
             "Dietary Restrictions",
             [
+                "None",
                 "Vegetarian",
                 "Vegan",
                 "Gluten-Free",
@@ -252,7 +253,7 @@ with tab_rsvp:
                 "Other Allergy or Restriction",
             ],
             key="rsvp_dietary",
-            help="Leave blank when there are no dietary restrictions.",
+            help="Select None if you have no dietary restrictions. Do not select None with another option.",
         )
         notes = st.text_area(
             "Additional comments",
@@ -282,6 +283,8 @@ with tab_rsvp:
                 st.error("Please enter your full name.")
             elif not is_valid_email(clean_email):
                 st.error("Please enter a valid work email address.")
+            elif "None" in dietary and len(dietary) > 1:
+                st.error("Please select None by itself or choose the applicable dietary restrictions.")
             else:
                 try:
                     sheet = get_sheet()
