@@ -256,10 +256,13 @@ with tab_rsvp:
             help="Select None if you have no dietary restrictions. Do not select None with another option.",
         )
         question = st.text_area(
-            "Please list one question you would like to ask about Growth, Collaboration or Innovation (or anything else).",
+            "What is your #1 burning question for our expert panel about CSP’s future?",
             key="rsvp_question",
             max_chars=500,
-            help="Optional. Your question will be shared with the event planning team.",
+            help=(
+                "We especially encourage questions related to Growth, Innovation, or "
+                "Collaboration, but questions on other topics are welcome."
+            ),
         )
         notes = st.text_area(
             "Additional Comments / Event Questions",
