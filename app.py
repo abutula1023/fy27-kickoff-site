@@ -163,8 +163,9 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-if Path("logo.png").exists():
-    st.image("logo.png", use_container_width=True)
+logo_path = Path("logo.png")
+if logo_path.exists():
+    st.image(logo_path.read_bytes(), use_container_width=True)
 
 st.title(EVENT_META["title"])
 st.subheader(f"🗓️ {EVENT_META['date']}")
