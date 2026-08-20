@@ -169,16 +169,16 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-updated_logo_path = Path("updated_logo.png")
-if updated_logo_path.exists():
+updated_logo_b64_path = Path("assets/updated_logo.b64")
+if updated_logo_b64_path.exists():
     try:
-        logo_data = updated_logo_path.read_bytes()
-        logo_b64 = base64.b64encode(logo_data).decode("ascii")
+        logo_b64 = updated_logo_b64_path.read_text(encoding="utf-8").strip()
+        base64.b64decode(logo_b64, validate=True)
         st.markdown(
             f'<img class="header-logo" src="data:image/png;base64,{logo_b64}" alt="Discover Grow Innovate Together">',
             unsafe_allow_html=True,
         )
-    except OSError:
+    except (OSError, ValueError, base64.binascii.Error):
         logger.exception("Updated header logo could not be loaded")
 
 st.title(EVENT_META["title"])
