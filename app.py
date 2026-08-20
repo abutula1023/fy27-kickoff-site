@@ -158,21 +158,28 @@ st.markdown(
             margin: 2px 0;
             text-align: center;
         }
+        .header-logo {
+            display: block;
+            width: 100%;
+            height: auto;
+            margin: 0 auto 1rem auto;
+        }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-logo_parts = [Path(f"assets/logo_part{i}.txt") for i in range(1, 5)]
-if all(path.exists() for path in logo_parts):
+updated_logo_path = Path("updated_logo.png")
+if updated_logo_path.exists():
     try:
-        logo_b64 = "".join(path.read_text(encoding="utf-8").strip() for path in logo_parts)
-        logo_data = base64.b64decode(logo_b64, validate=True)
-        st.image(logo_data, use_container_width=True)
-    except (ValueError, base64.binascii.Error):
-        logger.exception("Header logo data could not be decoded")
-elif Path("logo.png").exists():
-    st.image(Path("logo.png").read_bytes(), use_container_width=True)
+        logo_data = updated_logo_path.read_bytes()
+        logo_b64 = base64.b64encode(logo_data).decode("ascii")
+        st.markdown(
+            f'<img class="header-logo" src="data:image/png;base64,{logo_b64}" alt="Discover Grow Innovate Together">',
+            unsafe_allow_html=True,
+        )
+    except OSError:
+        logger.exception("Updated header logo could not be loaded")
 
 st.title(EVENT_META["title"])
 st.subheader(f"🗓️ {EVENT_META['date']}")
