@@ -158,12 +158,6 @@ st.markdown(
             margin: 2px 0;
             text-align: center;
         }
-        .header-logo {
-            display: block;
-            width: 100%;
-            height: auto;
-            margin: 0 auto 1rem auto;
-        }
     </style>
     """,
     unsafe_allow_html=True,
@@ -173,11 +167,10 @@ updated_logo_b64_path = Path("assets/updated_logo.b64")
 if updated_logo_b64_path.exists():
     try:
         logo_b64 = updated_logo_b64_path.read_text(encoding="utf-8").strip()
-        base64.b64decode(logo_b64, validate=True)
-        st.markdown(
-            f'<img class="header-logo" src="data:image/png;base64,{logo_b64}" alt="Discover Grow Innovate Together">',
-            unsafe_allow_html=True,
-        )
+        logo_bytes = base64.b64decode(logo_b64, validate=True)
+        if not logo_bytes.startswith(b"\x89PNG\r\n\x1a\n"):
+            raise ValueError("Header logo is not a valid PNG")
+        st.image(logo_bytes, use_container_width=True)
     except (OSError, ValueError, base64.binascii.Error):
         logger.exception("Updated header logo could not be loaded")
 
