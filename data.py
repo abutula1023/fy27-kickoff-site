@@ -32,10 +32,11 @@ AGENDA = [
     },
     {
         "time": "09:00 AM – 10:00 AM",
-        "title": "Speakers — Valerie, Anna, and Alex",
+        "title": "CSP Presentations",
         "desc": (
-            "Presentations and discussion focused on innovation, growth, "
-            "collaboration, and FY27 priorities."
+            "A series of short presentations from CSP team members, with most presenters "
+            "sharing approximately 10-minute talks focused on Growth, Innovation, "
+            "Collaboration, and other key FY27 priorities."
         ),
     },
     {
@@ -60,10 +61,10 @@ AGENDA = [
     },
     {
         "time": "01:30 PM – 02:30 PM",
-        "title": "Executive Panel",
+        "title": "Specialty Speaker Q&A",
         "desc": (
-            "A panel discussion with company leaders covering FY27 priorities, "
-            "opportunities, and key business topics."
+            "Our specialty speakers will answer questions submitted by attendees, with a "
+            "strong focus on Growth, Innovation, Collaboration, and the future of CSP."
         ),
     },
     {
