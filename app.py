@@ -151,18 +151,6 @@ st.markdown(
             border: none !important;
             min-height: 45px !important;
         }
-        .header-logo {
-            width: 100%;
-            margin: 0 0 1.25rem 0;
-            line-height: 0;
-        }
-        .header-logo img {
-            display: block;
-            width: 100%;
-            max-width: 100%;
-            height: auto;
-            object-fit: contain;
-        }
         .footer-text {
             color: #64748b;
             font-size: 12px;
@@ -175,24 +163,10 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# Render the header logo directly in the browser as a data URI. This avoids
-# Streamlit's media-file endpoint, which was intermittently dropping the image
-# even though the stored PNG data was valid.
-updated_logo_b64_path = Path("assets/updated_logo.b64")
-if updated_logo_b64_path.exists():
-    try:
-        logo_b64 = "".join(updated_logo_b64_path.read_text(encoding="utf-8").split())
-        logo_bytes = base64.b64decode(logo_b64, validate=True)
-        if not logo_bytes.startswith(b"\x89PNG\r\n\x1a\n"):
-            raise ValueError("Header logo is not a valid PNG")
-        st.markdown(
-            f'<div class="header-logo"><img src="data:image/png;base64,{logo_b64}" '
-            'alt="Central Specialty Pet" /></div>',
-            unsafe_allow_html=True,
-        )
-    except (OSError, ValueError, base64.binascii.Error):
-        logger.exception("Updated header logo could not be loaded")
-        st.warning("The event header image could not be loaded.")
+# Use the real PNG uploaded directly to the repository.
+header_logo_path = Path("updated_logo.png")
+if header_logo_path.exists():
+    st.image(str(header_logo_path), use_container_width=True)
 else:
     st.warning("The event header image file is missing.")
 
