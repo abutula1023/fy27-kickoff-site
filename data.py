@@ -13,9 +13,26 @@ EVENT_META = {
     "catering": "Bartolotta Catering",
 }
 
+PRESENTATION_DESC = (
+    "A series of short presentations from CSP team members focused on Growth, Innovation, "
+    "Collaboration, and other key FY27 priorities."
+)
+
+PANEL_DESC = (
+    "Panel moderated by Melissa McCance – Director – Corporate HR.\n\n"
+    "Panelists:\n"
+    "- Ernie – VP Innovation - Pet\n"
+    "- Alex Thompson – VP of Pet eComm\n"
+    "- Anna Bell – Sr VP Pet Marketing\n"
+    "- Chris Walter – SVP and CIO Central Garden and Pet\n"
+    "- Lonnie Hobbs Jr. – Professor at Kansas State University\n\n"
+    "The panel will answer questions submitted by attendees, with a strong focus "
+    "on Growth, Innovation, Collaboration, and the future of CSP."
+)
+
 AGENDA = [
     {
-        "time": "07:30 AM – 08:30 AM",
+        "time": "07:30 AM – 08:00 AM",
         "title": "Breakfast & Networking",
         "desc": (
             "Breakfast buffet with breakfast sandwiches, potatoes, assorted granola bars, "
@@ -23,72 +40,80 @@ AGENDA = [
         ),
     },
     {
-        "time": "08:30 AM – 09:00 AM",
-        "title": "Welcome & FY27 Theme — Todd",
+        "time": "08:00 AM – 08:15 AM",
+        "title": "Opening Welcome",
+        "desc": "Opening remarks to welcome attendees to the CSP 2027 Fiscal Year Kick-Off.",
+    },
+    {
+        "time": "08:15 AM – 08:30 AM",
+        "title": "FY 2027 Themes",
         "desc": (
-            "Opening remarks introducing the FY27 theme and our core pillars: "
-            "Collaboration, Innovation, and Growth."
+            "Introduction to the FY27 theme and our core pillars: Collaboration, Innovation, "
+            "and Growth."
         ),
     },
     {
-        "time": "09:00 AM – 10:00 AM",
-        "title": "CSP Presentations",
-        "desc": (
-            "A series of short presentations from CSP team members, with most presenters "
-            "sharing approximately 10-minute talks focused on Growth, Innovation, "
-            "Collaboration, and other key FY27 priorities."
-        ),
+        "time": "08:30 AM – 08:50 AM",
+        "title": "AM Presentations",
+        "desc": PRESENTATION_DESC,
+    },
+    {
+        "time": "08:50 AM – 09:10 AM",
+        "title": "AM Presentations",
+        "desc": PRESENTATION_DESC,
+    },
+    {
+        "time": "09:10 AM – 09:30 AM",
+        "title": "AM Presentations",
+        "desc": PRESENTATION_DESC,
+    },
+    {
+        "time": "09:30 AM – 09:50 AM",
+        "title": "AM Presentations",
+        "desc": PRESENTATION_DESC,
+    },
+    {
+        "time": "09:50 AM – 10:00 AM",
+        "title": "Segue to Group Activity",
+        "desc": "Transition to the group competition.",
     },
     {
         "time": "10:00 AM – 12:00 PM",
-        "title": "Team Competition",
+        "title": "Group Competition!",
         "desc": "Event hosted by Watson Adventures.",
     },
     {
         "time": "12:00 PM – 01:00 PM",
-        "title": "Lunch: Little Italy Buffet",
+        "title": "Lunch",
         "desc": (
             "Chicken Marsala, rigatoni with eggplant and mozzarella, Parmesan green bean "
             "salad, rosemary potatoes, focaccia, and dessert."
         ),
     },
     {
-        "time": "01:00 PM – 01:30 PM",
-        "title": "Networking, Wander & Swag Giveaway",
-        "desc": (
-            "Explore the pavilion, network with colleagues, and pick up custom event swag."
-        ),
+        "time": "01:00 PM – 01:10 PM",
+        "title": "Segue to Panel",
+        "desc": "Transition to the panel discussion.",
     },
     {
-        "time": "01:30 PM – 02:30 PM",
-        "title": "Specialty Speaker Q&A",
-        "desc": (
-            "Panel moderated by Melissa McCance – Director – Corporate HR.\n\n"
-            "Panelists:\n"
-            "- Ernie – VP Innovation - Pet\n"
-            "- Alex Thompson – VP of Pet eComm\n"
-            "- Anna Bell – Sr VP Pet Marketing\n"
-            "- Chris Walter – SVP and CIO Central Garden and Pet\n"
-            "- Lonnie Hobbs Jr. – Professor at Kansas State University\n\n"
-            "The panel will answer questions submitted by attendees, with a strong focus "
-            "on Growth, Innovation, Collaboration, and the future of CSP."
-        ),
+        "time": "01:10 PM – 02:15 PM",
+        "title": "Panel Discussion",
+        "desc": PANEL_DESC,
     },
     {
-        "time": "02:30 PM – 03:00 PM",
-        "title": "Wrap Up Talk & Team Winner Award Ceremony",
-        "desc": (
-            "Final takeaways, recognition of the team competition winner, "
-            "and closing remarks. Guests must leave the Pavilion by 3:00 PM."
-        ),
+        "time": "02:15 PM – 02:30 PM",
+        "title": "Team Award Ceremony!",
+        "desc": "Recognition of the team competition winner.",
     },
     {
-        "time": "03:00 PM – 05:00 PM",
-        "title": "After-Event Gathering (Optional)",
-        "desc": (
-            "An informal, optional post-event gathering for networking, "
-            "conversation, and decompression."
-        ),
+        "time": "02:30 PM – 02:45 PM",
+        "title": "Closing Comments",
+        "desc": "Final takeaways and closing remarks.",
+    },
+    {
+        "time": "02:45 PM – 03:00 PM",
+        "title": "Depart",
+        "desc": "Guests must leave the Pavilion by 3:00 PM.",
     },
 ]
 
