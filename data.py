@@ -53,22 +53,7 @@ AGENDA = [
         ),
     },
     {
-        "time": "08:30 AM – 08:50 AM",
-        "title": "AM Presentations",
-        "desc": PRESENTATION_DESC,
-    },
-    {
-        "time": "08:50 AM – 09:10 AM",
-        "title": "AM Presentations",
-        "desc": PRESENTATION_DESC,
-    },
-    {
-        "time": "09:10 AM – 09:30 AM",
-        "title": "AM Presentations",
-        "desc": PRESENTATION_DESC,
-    },
-    {
-        "time": "09:30 AM – 09:50 AM",
+        "time": "08:30 AM – 09:50 AM",
         "title": "AM Presentations",
         "desc": PRESENTATION_DESC,
     },
