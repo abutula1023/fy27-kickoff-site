@@ -63,8 +63,15 @@ AGENDA = [
         "time": "01:30 PM – 02:30 PM",
         "title": "Specialty Speaker Q&A",
         "desc": (
-            "Our specialty speakers will answer questions submitted by attendees, with a "
-            "strong focus on Growth, Innovation, Collaboration, and the future of CSP."
+            "Panel moderated by Melissa McCance – Director – Corporate HR.\n\n"
+            "Panelists:\n"
+            "- Ernie – VP Innovation - Pet\n"
+            "- Alex Thompson – VP of Pet eComm\n"
+            "- Anna Bell – Sr VP Pet Marketing\n"
+            "- Chris Walter – SVP and CIO Central Garden and Pet\n"
+            "- Lonnie Hobbs Jr. – Professor at Kansas State University\n\n"
+            "The panel will answer questions submitted by attendees, with a strong focus "
+            "on Growth, Innovation, Collaboration, and the future of CSP."
         ),
     },
     {
