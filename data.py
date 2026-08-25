@@ -115,6 +115,14 @@ AGENDA = [
         "title": "Depart",
         "desc": "Guests must leave the Pavilion by 3:00 PM.",
     },
+    {
+        "time": "03:00 PM – 05:00 PM",
+        "title": "After-Event Gathering (Optional)",
+        "desc": (
+            "An informal, optional post-event gathering for networking, "
+            "conversation, and decompression."
+        ),
+    },
 ]
 
 FAQS = [
