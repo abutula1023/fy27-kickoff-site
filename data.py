@@ -60,8 +60,8 @@ AGENDA = [
     },
     {
         "time": "09:50 AM – 10:00 AM",
-        "title": "Segue to Group Activity",
-        "desc": "Transition to the group competition.",
+        "title": "Group Picture",
+        "desc": "We will all head out back by the Amphitheatre for a group picture.",
     },
     {
         "time": "10:00 AM – 12:00 PM",
