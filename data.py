@@ -4,8 +4,8 @@ EVENT_META = {
     "title": "CSP 2027 Fiscal Year Kick-Off",
     "date": "September 18, 2026",
     "venue": "Discovery World, 500 North Harbor Drive, Milwaukee, WI 53202",
-    "hours": "7:30 AM – 3:00 PM",
-    "dress_code": "Business Casual",
+    "hours": "Optional Breakfast: 7:30 AM | Program: 8:00 AM – 3:00 PM",
+    "dress_code": "Business Casual — Please wear comfortable shoes for the group activity (no high heels)",
     "parking": (
         "On-site underground museum garage with limited capacity. "
         "Street parking is available if the garage fills up."
@@ -33,8 +33,9 @@ PANEL_DESC = (
 AGENDA = [
     {
         "time": "07:30 AM – 08:00 AM",
-        "title": "Breakfast & Networking",
+        "title": "Breakfast & Networking (Optional)",
         "desc": (
+            "Optional breakfast and networking before the formal program begins at 8:00 AM. "
             "Breakfast buffet with breakfast sandwiches, potatoes, assorted granola bars, "
             "muffins, fresh fruit, and yogurt parfaits."
         ),
