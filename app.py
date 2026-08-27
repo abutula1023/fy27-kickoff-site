@@ -1,5 +1,6 @@
 # app.py
 # Schedule revision: August 25, 2026
+# Dress code revision: August 27, 2026
 from __future__ import annotations
 
 import base64
@@ -182,10 +183,8 @@ tab_agenda, tab_faqs, tab_rsvp, tab_dashboard = st.tabs(
 
 with tab_agenda:
     st.header("Event Schedule")
-    st.info(
-        f"**👔 Dress Code:** {EVENT_META['dress_code']} | "
-        f"**🍽️ Catering by:** {EVENT_META['catering']}"
-    )
+    st.info(f"**👔 Dress Code:** {EVENT_META['dress_code']}")
+    st.caption(f"🍽️ Catering by: {EVENT_META['catering']}")
     for item in AGENDA:
         with st.expander(f"**{item['time']}** — {item['title']}"):
             st.write(item["desc"])
