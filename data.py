@@ -5,7 +5,12 @@ EVENT_META = {
     "date": "September 18, 2026",
     "venue": "Discovery World, 500 North Harbor Drive, Milwaukee, WI 53202",
     "hours": "8:00 AM – 3:00 PM",
-    "dress_code": "Business Casual — Please wear comfortable shoes for the group activity (no high heels)",
+    "dress_code": (
+        "Business Casual — Keep it polished but comfortable. Polos/collared shirts, blouses "
+        "or sweaters with khakis, dress pants, or neat jeans are great options. Please wear "
+        "comfortable shoes suitable for walking and light activity (no high heels). Ties and "
+        "formal dress shoes are not necessary."
+    ),
     "parking": (
         "On-site underground museum garage with limited capacity. "
         "Street parking is available if the garage fills up."
