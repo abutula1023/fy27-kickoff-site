@@ -12,8 +12,9 @@ EVENT_META = {
         "formal dress shoes are not necessary."
     ),
     "parking": (
-        "On-site underground museum garage with limited capacity. "
-        "Street parking is available if the garage fills up."
+        "On-site underground museum garage with limited capacity. Street parking is available "
+        "if the garage fills up. Important: all vehicles must be moved out of the Discovery "
+        "World parking lot by 3:00 PM."
     ),
     "catering": "Bartolotta Catering",
 }
@@ -103,8 +104,11 @@ AGENDA = [
     },
     {
         "time": "02:45 PM – 03:00 PM",
-        "title": "Depart",
-        "desc": "Guests must leave the Pavilion by 3:00 PM.",
+        "title": "Depart — Parking Lot Must Be Cleared by 3:00 PM",
+        "desc": (
+            "Everyone must depart Discovery World and move their vehicle out of the parking "
+            "lot by 3:00 PM. We must be completely out of the lot by that time."
+        ),
     },
     {
         "time": "03:00 PM – 05:00 PM",
@@ -120,9 +124,10 @@ FAQS = [
     {
         "question": "What is the parking situation?",
         "answer": (
-            "Parking is available in the underground museum garage, but capacity is "
-            "limited, so carpooling is recommended. Street parking is available nearby "
-            "if the garage fills up. A parking attendant will be on-site to help guide drivers."
+            "Parking is available in the underground museum garage, but capacity is limited, "
+            "so carpooling is recommended. Street parking is available nearby if the garage "
+            "fills up. A parking attendant will be on-site to help guide drivers. Important: "
+            "all vehicles must be moved out of the Discovery World parking lot by 3:00 PM."
         ),
     },
     {
