@@ -1,6 +1,7 @@
 # app.py
 # Schedule revision: August 25, 2026
 # Dress code revision: August 27, 2026
+# Agenda revision: September 1, 2026
 from __future__ import annotations
 
 import base64
