@@ -38,21 +38,21 @@ PANEL_DESC = (
 
 AGENDA = [
     {
-        "time": "07:30 AM – 08:00 AM",
+        "time": "07:30 AM – 08:15 AM",
         "title": "Breakfast & Networking (Optional)",
         "desc": (
-            "Optional breakfast and networking before the formal program begins at 8:00 AM. "
+            "Optional breakfast and networking before the formal program begins at 8:15 AM. "
             "Breakfast buffet with breakfast sandwiches, potatoes, assorted granola bars, "
             "muffins, fresh fruit, and yogurt parfaits."
         ),
     },
     {
-        "time": "08:00 AM – 08:15 AM",
+        "time": "08:15 AM – 08:25 AM",
         "title": "Opening Welcome",
         "desc": "Opening remarks to welcome attendees to the CSP 2027 Fiscal Year Kick-Off.",
     },
     {
-        "time": "08:15 AM – 08:30 AM",
+        "time": "08:25 AM – 08:40 AM",
         "title": "FY 2027 Themes",
         "desc": (
             "Introduction to the FY27 theme and our core pillars: Collaboration, Innovation, "
@@ -60,14 +60,9 @@ AGENDA = [
         ),
     },
     {
-        "time": "08:30 AM – 09:50 AM",
+        "time": "08:40 AM – 10:00 AM",
         "title": "AM Presentations",
         "desc": PRESENTATION_DESC,
-    },
-    {
-        "time": "09:50 AM – 10:00 AM",
-        "title": "Group Picture",
-        "desc": "We will all head out back by the Amphitheatre for a group picture.",
     },
     {
         "time": "10:00 AM – 12:00 PM",
@@ -98,12 +93,17 @@ AGENDA = [
         "desc": "Recognition of the team competition winner.",
     },
     {
-        "time": "02:30 PM – 02:45 PM",
+        "time": "02:30 PM – 02:40 PM",
+        "title": "CSP Team Picture",
+        "desc": "We will all head out back by the Amphitheatre for a group picture.",
+    },
+    {
+        "time": "02:40 PM – 02:55 PM",
         "title": "Closing Comments",
         "desc": "Final takeaways and closing remarks.",
     },
     {
-        "time": "02:45 PM – 03:00 PM",
+        "time": "02:55 PM – 03:00 PM",
         "title": "Depart — Parking Lot Must Be Cleared by 3:00 PM",
         "desc": (
             "Everyone must depart Discovery World and move their vehicle out of the parking "
