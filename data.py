@@ -111,12 +111,9 @@ AGENDA = [
         ),
     },
     {
-        "time": "03:00 PM – 05:00 PM",
-        "title": "After-Event Gathering (Optional)",
-        "desc": (
-            "An informal, optional post-event gathering for networking, "
-            "conversation, and decompression."
-        ),
+        "time": "03:00 PM",
+        "title": "That's a Wrap!",
+        "desc": "The day is officially over. Thank you for joining us — enjoy your weekend!",
     },
 ]
 
@@ -127,9 +124,7 @@ FAQS = [
             "Parking is available in the underground museum garage, but capacity is limited, "
             "so carpooling is recommended. Street parking is available nearby if the garage "
             "fills up. A parking attendant will be on-site to help guide drivers. Important: "
-            "all vehicles must be moved out of the Discovery World parking lot by 3:00 PM. "
-            "This applies even if you plan to attend the optional 3:00–5:00 PM gathering — "
-            "you will need to move your vehicle before joining the gathering."
+            "all vehicles must be moved out of the Discovery World parking lot by 3:00 PM."
         ),
     },
     {
