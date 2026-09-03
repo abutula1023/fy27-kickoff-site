@@ -29,7 +29,6 @@ PANEL_DESC = (
     "Panelists:\n"
     "- Ernie – VP Innovation - Pet\n"
     "- Alex Thompson – VP of Pet eComm\n"
-    "- Anna Bell – Sr VP Pet Marketing\n"
     "- Chris Walter – SVP and CIO Central Garden and Pet\n"
     "- Lonnie Hobbs Jr. – Professor at Kansas State University\n\n"
     "The panel will answer questions submitted by attendees, with a strong focus "
